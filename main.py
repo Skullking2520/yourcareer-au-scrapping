@@ -42,7 +42,7 @@ def set_sheet():
     key_path = "service_account.json"
     with open(key_path, "w") as f:
         f.write(key_content)
-
+    
     scopes = [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive'
@@ -55,16 +55,18 @@ def set_sheet():
     sheet_name = "Occupation"
     worksheet = sh.worksheet(sheet_name)
     worksheet.clear()
-    headers = ["occupation code", "occupation", "average salary", "future demand", "job type", "skill level", "industry", "skills", "link to vacancies", "link to courses",
+    headers = ["occupation code", "occupation", "occupation link", "description", "average salary", "future demand", "job type",
+               "skill level", "industry", "skills", "number of vacancies", "number of courses",
+               "link to vacancies", "link to courses",
          "overview : interests", "overview : considerations", "overview : day-to-day"]
     worksheet.append_row(headers)
     header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
     format_cell_range(worksheet, 'A1:M1', header_format)
-    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'H']:
+    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','L','H']:
         set_column_width(worksheet, col, 150)
-    for col in ['I', 'J']:
+    for col in ['M', 'N']:
         set_column_width(worksheet, col, 200)
-    for col in ['G', 'K', 'L', 'M']:
+    for col in ['J', 'P', 'Q']:
         set_column_width(worksheet, col, 300)
     return worksheet
 
@@ -114,14 +116,24 @@ def main():
             except NoSuchElementException:
                 vacancy_hyper_link = "No link given"
 
+            # find number of vacancies
+            try:
+                raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
+                match = re.search(r"^\d+", raw_num_vacancy)
+                if match:
+                    num_vacancy = match.group()
+                else:
+                    num_vacancy = "No number of vacancy given"
+            except NoSuchElementException:
+                num_vacancy = "No number of vacancy given"
+
             # find link to courses
             courses_links = occupation.find_elements(By.CSS_SELECTOR, "a[aria-label^='Explore courses'], a[aria-label^='View course']")
             if courses_links:
                 courses_url = courses_links[0].get_attribute("href")
                 courses_url_escaped = courses_url.replace('"', '\\"')
-                courses_hyper_link = f'=HYPERLINK("{courses_url_escaped}", "{courses_url_escaped}")'
             else:
-                courses_hyper_link = "No link given"
+                courses_url_escaped = "No link given"
 
             # move to detailed page
             try:
@@ -140,8 +152,9 @@ def main():
             occupation_data = {
                 "detail_url": detail_url,
                 "occupation_name": occupation_name,
+                "num_vacancy": num_vacancy,
                 "vacancy_hyper_link": vacancy_hyper_link,
-                "courses_hyper_link": courses_hyper_link
+                "courses_url_escaped": courses_url_escaped
             }
             all_occupation_data.append(occupation_data)
         if not check_next_button(driver=page_driver):
@@ -159,7 +172,10 @@ def main():
         print(f"current page: {occ_info['occupation_name']}")
         occupation_code = find_occupation_code(current_url)[0]
 
+        occupation_link = f'=HYPERLINK("{occ_info['detail_url']}", "{occ_info['detail_url']}")'
+
         if occ_info["detail_url"] is None:
+            description = "Failed to find description"
             occupation_name = "Failed to find name"
             occupation_code = "Failed to load detail page"
             average_salary = "Failed to load detail page"
@@ -167,6 +183,7 @@ def main():
             job_type = "Failed to load detail page"
             skill_level = "Failed to load detail page"
             industry = "Failed to load detail page"
+            num_courses = "Failed to load number of courses page"
             overview_interests_text = "Failed to load detail page"
             overview_considerations_text = "Failed to load detail page"
             dtd = "Failed to load detail page"
@@ -174,6 +191,13 @@ def main():
             print(f"Failed to find {occupation_name} link. Skipping...")
 
         else:
+            # find description
+            try:
+                description = page_driver.find_element(By.CSS_SELECTOR,
+                                                          "div[class='text-lg']").text
+            except NoSuchElementException:
+                description = "No description given"
+
             # find average salary
             try:
                 average_salary = page_driver.find_element(By.CSS_SELECTOR,"h3[identifer='Occupation_Insights_Average_Salary'] ~ p").text
@@ -211,6 +235,18 @@ def main():
             except NoSuchElementException:
                 industry = "No industry given"
 
+            # find Apprenticeships and traineeships
+            try:
+                raw_aat = page_driver.find_element(By.CSS_SELECTOR, "ul[class='list-inline']")
+                li_aat = raw_aat.find_elements(By.CSS_SELECTOR, "a[class='mint-link']")
+                aat_list = []
+                for aat_element in li_aat:
+                    aat_list.append(aat_element.text)
+                aat = ", \n".join(aat_list)
+            except NoSuchElementException:
+                aat = "No Apprenticeships and traineeships given"
+
+
             # find interests
             try:
                 interests = page_driver.find_element(By.CSS_SELECTOR, "h3[identifier='Interests_Stories_Heading'] ~ ul")
@@ -240,8 +276,8 @@ def main():
                 dtd_elements = dtds.find_elements(By.TAG_NAME, "li")
                 dtd_list = []
                 for dtd_element in dtd_elements:
-                    dtd_list.append(dtd_element.text)
-                dtd = "\n".join(dtd_list)
+                    dtd_list.append(f"'{dtd_element.text}'")
+                dtd = ",\n".join(dtd_list)
             except NoSuchElementException:
                 dtd = "No day-to-day given"
 
@@ -263,16 +299,35 @@ def main():
             except NoSuchElementException:
                 skills_text = "Failed to load skills page"
 
+            # find number of courses
+            try:
+                page_driver.get(occ_info['courses_url_escaped'])
+                time.sleep(5)
+                try:
+                    raw_num_courses = page_driver.find_element(By.CSS_SELECTOR, '[aria-level="2"]').text
+                    num_courses = re.search(r"\d+\s*$", raw_num_courses).group().strip()
+                except Exception:
+                    num_courses = "No number of courses given"
+            except NoSuchElementException:
+                num_courses = "Failed to load courses page"
+
+
+        courses_hyper_link = f'=HYPERLINK("{occ_info['courses_url_escaped']}", "{occ_info['courses_url_escaped']}")'
+
         occupation_detail = [occupation_code,
                              occ_info["occupation_name"],
+                             occupation_link,
+                             description,
                              average_salary,
                              future_demand,
                              job_type,
                              skill_level,
                              industry,
                              skills_text,
+                             occ_info['num_vacancy'],
+                             num_courses,
                              occ_info["vacancy_hyper_link"],
-                             occ_info["courses_hyper_link"],
+                             courses_hyper_link,
                              overview_interests_text,
                              overview_considerations_text,
                              dtd]
@@ -284,3 +339,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
