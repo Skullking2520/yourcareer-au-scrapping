@@ -6,6 +6,7 @@ from gspread_formatting import *
 import time
 import re
 import gspread
+import os
 
 def set_driver():
     # set options and driver settings
@@ -33,15 +34,14 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
                 raise
 
 def set_sheet():
-    key_path = 'orbital-bank-448101-m4-45ac7ee07c01.json'
     # This is for GitHub action
-    # key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
-    # if not key_content:
-    #     raise FileNotFoundError("Service account key content not found in environment variable!")
-    #
-    # key_path = "service_account.json"
-    # with open(key_path, "w") as f:
-    #     f.write(key_content)
+    key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
+    if not key_content:
+        raise FileNotFoundError("Service account key content not found in environment variable!")
+
+    key_path = "service_account.json"
+    with open(key_path, "w") as f:
+        f.write(key_content)
 
     scopes = [
         'https://www.googleapis.com/auth/spreadsheets',
