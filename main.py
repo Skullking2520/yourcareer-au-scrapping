@@ -304,7 +304,7 @@ def main():
                 page_driver.get(occ_info['courses_url_escaped'])
                 time.sleep(5)
                 try:
-                    raw_num_courses = page_driver.find_element(By.CSS_SELECTOR, '[aria-level="2"]').text
+                    raw_num_courses = page_driver.find_element(By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]').text
                     num_courses = re.search(r"\d+\s*$", raw_num_courses).group().strip()
                 except Exception:
                     num_courses = "No number of courses given"
