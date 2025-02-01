@@ -30,7 +30,7 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             worksheet.append_row(data, value_input_option="USER_ENTERED")
             return
         except gspread.exceptions.APIError as e:
-            if "503" in error_message or "500" in str(e):
+            if "503" in str(e) or "500" in str(e):
                 print(f"Error 503 occurred. Retry after {delay}seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
@@ -174,7 +174,8 @@ def main():
         time.sleep(3)
         current_url = page_driver.current_url
         print(f"current page: {occ_info['occupation_name']}")
-        occupation_code = find_occupation_code(current_url)[0]
+        codes = find_occupation_code(current_url)
+        occupation_code = codes[0] if codes else "No code found"
 
         occupation_link = f'=HYPERLINK("{occ_info['detail_url']}", "{occ_info['detail_url']}")'
 
@@ -187,7 +188,6 @@ def main():
             job_type = "Failed to load detail page"
             skill_level = "Failed to load detail page"
             industry = "Failed to load detail page"
-            num_courses = "Failed to load number of courses page"
             overview_interests_text = "Failed to load detail page"
             overview_considerations_text = "Failed to load detail page"
             dtd = "Failed to load detail page"
@@ -315,7 +315,6 @@ def main():
                              industry,
                              skills_text,
                              occ_info['num_vacancy'],
-                             num_courses,
                              occ_info["vacancy_hyper_link"],
                              courses_hyper_link,
                              aat,
