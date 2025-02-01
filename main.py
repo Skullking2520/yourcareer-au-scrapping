@@ -60,17 +60,17 @@ def set_sheet():
     worksheet = sh.worksheet(sheet_name)
     worksheet.clear()
     headers = ["occupation code", "occupation", "occupation link", "description", "average salary", "future demand", "job type",
-               "skill level", "industry", "skills", "number of vacancies", "number of courses",
+               "skill level", "industry", "skills", "number of vacancies",
                "link to vacancies", "link to courses", "apprenticeships and traineeships",
          "overview : interests", "overview : considerations", "overview : day-to-day"]
     worksheet.append_row(headers)
     header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
     format_cell_range(worksheet, 'A1:M1', header_format)
-    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','L','H']:
+    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','M','H']:
         set_column_width(worksheet, col, 150)
-    for col in ['M', 'N', 'P', 'Q']:
+    for col in ['N', 'O', 'Q', 'R']:
         set_column_width(worksheet, col, 200)
-    for col in ['J', 'O', 'R']:
+    for col in ['J', 'P']:
         set_column_width(worksheet, col, 300)
     return worksheet
 
@@ -301,36 +301,6 @@ def main():
                     skills_text = "No skills given"
             except NoSuchElementException:
                 skills_text = "Failed to load skills page"
-
-            # find number of courses
-            try:
-                base_url = "https://www.yourcareer.gov.au"
-                if occ_info['courses_url_escaped'] != "No link given":
-                    extra_params = "address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25"
-                    if '?' in occ_info['courses_url_escaped']:
-                        courses_url_full = occ_info['courses_url_escaped'] + "&" + extra_params
-                    else:
-                        courses_url_full = occ_info['courses_url_escaped'] + "?" + extra_params
-                    print("Courses URL:", courses_url_full)
-                else:
-                    courses_url_full = "No link given"
-                    
-                if courses_url_full == "No link given":
-                    num_courses = "No link given"
-                else:
-                    full_courses_url = urljoin(base_url, courses_url_full)
-                    page_driver.get(full_courses_url)
-                    time.sleep(5)
-                    element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
-                    raw_num_courses = element.text
-                    matches = re.findall(r'\d+', raw_num_courses)
-                    if matches:
-                        num_courses = matches[-1]
-                    else:
-                        num_courses = "No number of courses given"
-            except (NoSuchElementException, TimeoutException):
-                num_courses = "Failed to load courses page"
-
 
         courses_hyper_link = f'=HYPERLINK("{occ_info['courses_url_escaped']}", "{occ_info['courses_url_escaped']}")'
 
