@@ -1,6 +1,8 @@
 from selenium import webdriver # web scrapping
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from google.oauth2.service_account import Credentials # google doc
 from gspread_formatting import *
 import time
