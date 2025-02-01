@@ -66,11 +66,11 @@ def set_sheet():
     worksheet.append_row(headers)
     header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
     format_cell_range(worksheet, 'A1:M1', header_format)
-    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','M','H']:
+    for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'K', 'L', 'M', 'H']:
         set_column_width(worksheet, col, 150)
-    for col in ['N', 'O', 'Q', 'R']:
+    for col in ['J', 'N', 'O', 'Q']:
         set_column_width(worksheet, col, 200)
-    for col in ['J', 'P']:
+    for col in ['P']:
         set_column_width(worksheet, col, 300)
     return worksheet
 
