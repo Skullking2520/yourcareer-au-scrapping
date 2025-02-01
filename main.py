@@ -68,9 +68,9 @@ def set_sheet():
     format_cell_range(worksheet, 'A1:M1', header_format)
     for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','L','H']:
         set_column_width(worksheet, col, 150)
-    for col in ['M', 'N', 'P', 'O', 'I']:
+    for col in ['M', 'N', 'P', 'Q']:
         set_column_width(worksheet, col, 200)
-    for col in ['J', 'Q', 'R']:
+    for col in ['J', 'O', 'R']:
         set_column_width(worksheet, col, 300)
     return worksheet
 
@@ -242,12 +242,10 @@ def main():
 
             # find Apprenticeships and traineeships
             try:
-                raw_aat = page_driver.find_element(By.CSS_SELECTOR, "ul[class='list-inline']")
-                li_aat = raw_aat.find_elements(By.CSS_SELECTOR, "a[class='mint-link']")
-                aat_list = []
-                for aat_element in li_aat:
-                    aat_list.append(aat_element.text)
-                aat = ", \n".join(aat_list)
+                raw_aat = page_driver.find_element(By.CSS_SELECTOR, "ul.list-inline")
+                li_aat = raw_aat.find_elements(By.CSS_SELECTOR, "span.mint-pill__content-label")
+                aat_list = [element.text for element in li_aat if element.text.strip() != '']
+                aat = ", \n".join(aat_list) if aat_list else "No Apprenticeships and traineeships given"
             except NoSuchElementException:
                 aat = "No Apprenticeships and traineeships given"
 
@@ -319,7 +317,7 @@ def main():
                 if courses_url_full == "No link given":
                     num_courses = "No link given"
                 else:
-                    full_courses_url = urljoin(base_url, occ_info['courses_url_escaped'])
+                    full_courses_url = urljoin(base_url, courses_url_full)
                     page_driver.get(full_courses_url)
                     time.sleep(5)
                     element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
