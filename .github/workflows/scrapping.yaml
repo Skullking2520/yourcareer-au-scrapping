@@ -40,8 +40,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Scraping
+    - name: Run Occupation Scraping
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python main.py
+
+    - name: Wait for 5 minutes
+      run: sleep 300 
+    
+    - name: Run Vacancies Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy.py
