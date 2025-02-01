@@ -307,16 +307,28 @@ def main():
             # find number of courses
             try:
                 base_url = "https://www.yourcareer.gov.au"
-                full_courses_url = urljoin(base_url, occ_info['courses_url_escaped'])
-                page_driver.get(full_courses_url)
-                time.sleep(5)
-                element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
-                raw_num_courses = element.text
-                matches = re.findall(r'\d+', raw_num_courses)
-                if matches:
-                    num_courses = matches[-1]
+                if occ_info['courses_url_escaped'] != "No link given":
+                    extra_params = "&address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25"
+                    if extra_params not in occ_info['courses_url_escaped']:
+                        courses_url_full = occ_info['courses_url_escaped'] + extra_params
+                    else:
+                        courses_url_full = occ_info['courses_url_escaped']
                 else:
-                    num_courses = "No number of courses given"
+                    courses_url_full = "No link given"
+                    
+                if courses_url_full == "No link given":
+                    num_courses = "No link given"
+                else:
+                    full_courses_url = urljoin(base_url, occ_info['courses_url_escaped'])
+                    page_driver.get(full_courses_url)
+                    time.sleep(5)
+                    element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
+                    raw_num_courses = element.text
+                    matches = re.findall(r'\d+', raw_num_courses)
+                    if matches:
+                        num_courses = matches[-1]
+                    else:
+                        num_courses = "No number of courses given"
             except (NoSuchElementException, TimeoutException):
                 num_courses = "Failed to load courses page"
 
