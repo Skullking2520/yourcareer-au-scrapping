@@ -65,7 +65,7 @@ def set_sheet():
          "overview : interests", "overview : considerations", "overview : day-to-day"]
     worksheet.append_row(headers)
     header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
-    format_cell_range(worksheet, 'A1:M1', header_format)
+    format_cell_range(worksheet, 'A1:Q1', header_format)
     for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'K', 'L', 'M', 'H']:
         set_column_width(worksheet, col, 150)
     for col in ['J', 'N', 'O', 'Q']:
