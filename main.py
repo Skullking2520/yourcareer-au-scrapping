@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 from selenium import webdriver # web scrapping
 from selenium.common.exceptions import NoSuchElementException,TimeoutException
 from selenium.webdriver.common.by import By
