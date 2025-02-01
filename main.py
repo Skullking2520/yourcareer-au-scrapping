@@ -61,16 +61,16 @@ def set_sheet():
     worksheet.clear()
     headers = ["occupation code", "occupation", "occupation link", "description", "average salary", "future demand", "job type",
                "skill level", "industry", "skills", "number of vacancies", "number of courses",
-               "link to vacancies", "link to courses",
+               "link to vacancies", "link to courses", "apprenticeships and traineeships",
          "overview : interests", "overview : considerations", "overview : day-to-day"]
     worksheet.append_row(headers)
     header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
     format_cell_range(worksheet, 'A1:M1', header_format)
     for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'K','L','H']:
         set_column_width(worksheet, col, 150)
-    for col in ['M', 'N']:
+    for col in ['M', 'N', 'P', 'O', 'I']:
         set_column_width(worksheet, col, 200)
-    for col in ['J', 'P', 'Q']:
+    for col in ['J', 'Q', 'R']:
         set_column_width(worksheet, col, 300)
     return worksheet
 
@@ -192,6 +192,7 @@ def main():
             overview_considerations_text = "Failed to load detail page"
             dtd = "Failed to load detail page"
             skills_text = "Failed to load detail page"
+            aat = "Failed to load detail page"
             print(f"Failed to find {occupation_name} link. Skipping...")
 
         else:
@@ -336,6 +337,7 @@ def main():
                              num_courses,
                              occ_info["vacancy_hyper_link"],
                              courses_hyper_link,
+                             aat,
                              overview_interests_text,
                              overview_considerations_text,
                              dtd]
