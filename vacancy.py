@@ -152,9 +152,8 @@ def main():
     init = set_vacancy_sheet()
     va_sheet = get_worksheet("Vacancies")
     driver = set_driver()
-    va_occupation_list = extract()
 
-    for url_data in va_occupation_list:
+    for url_data in extract():
         va_occupation = url_data[0]
         va_url = url_data[1]
 
