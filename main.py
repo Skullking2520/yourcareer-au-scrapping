@@ -304,10 +304,12 @@ def main():
             try:
                 page_driver.get(occ_info['courses_url_escaped'])
                 time.sleep(5)
-                try:
-                    raw_num_courses = page_driver.find_element(By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]').text
-                    num_courses = re.search(r"\d+\s*$", raw_num_courses).group().strip()
-                except Exception:
+                element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
+                raw_num_courses = element.text
+                matches = re.findall(r'\d+', raw_num_courses)
+                if matches:
+                    num_courses = matches[-1]
+                else:
                     num_courses = "No number of courses given"
             except NoSuchElementException:
                 num_courses = "Failed to load courses page"
