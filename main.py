@@ -27,9 +27,10 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             worksheet.append_row(data, value_input_option="USER_ENTERED")
             return
         except gspread.exceptions.APIError as e:
-            if "503" in str(e):
+            if "503" in error_message or "500" in str(e):
                 print(f"Error 503 occurred. Retry after {delay}seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
+                delay *= 2
             else:
                 raise
 
