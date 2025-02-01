@@ -207,8 +207,8 @@ def main():
                     "job_title": job_title,
                     "job_link": job_link,
                     "job_code": job_code,
-                    "date_added": date_added,
-                    "time_scrapped": time_scrapped,
+                    "date_added": str(date_added),
+                    "time_scrapped": str(time_scrapped),
                     "overview": overview
                 }
                 all_vacancy_data.append(vacancy_data)
