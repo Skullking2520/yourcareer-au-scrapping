@@ -228,7 +228,7 @@ def main():
             print(f"current page: {vac_element['job_title']}")
 
             try:
-                company = driver.find_element(By.CSS_SELECTOR, "div.text-lg p a").text
+                company = driver.find_element(By.XPATH, "//div[@class='text-lg' and @dir='auto']//p/a").text
             except NoSuchElementException:
                 company = "No company given"
 
@@ -242,12 +242,18 @@ def main():
                 address = "No address given"
 
             try:
-                salary = driver.find_element(By.CSS_SELECTOR,"ul.job-info-metadata > li:nth-child(2) > span:nth-child(2)").text
+                salary = driver.find_element(
+                    By.CSS_SELECTOR,
+                    "ul.job-info-metadata > li:nth-child(2) > span:nth-of-type(2)"
+                ).text
             except NoSuchElementException:
-                salary = "No tenure given"
-
+                salary = "No salary given"
+            
             try:
-                tenure = driver.find_element(By.CSS_SELECTOR,"ul.job-info-metadata > li:nth-child(3) > span:nth-child(2)").text
+                tenure = driver.find_element(
+                    By.CSS_SELECTOR,
+                    "ul.job-info-metadata > li:nth-child(3) > span:nth-of-type(2)"
+                ).text
             except NoSuchElementException:
                 tenure = "No tenure given"
 
@@ -280,17 +286,18 @@ def main():
                 va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
                 link = va_map.get_attribute("href")
                 driver.get(link)
+                time.sleep(10)
                 map_url = driver.current_url
                 pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
                 match = re.search(pattern, map_url)
                 if match:
-                    lat, long = match.groups()
+                    va_lat, va_long = match.groups()
                 else:
-                    lat = "No lat given"
-                    long = "No long given"
+                    va_lat = "No lat given"
+                    va_long = "No long given"
             except NoSuchElementException:
-                lat = "No lat given"
-                long = "No long given"
+                va_lat = "No lat given"
+                va_long = "No long given"
 
             va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
 
@@ -307,8 +314,8 @@ def main():
                     company,
                     salary,
                     address,
-                    lat,
-                    long,
+                    va_lat,
+                    va_long,
                     tenure,
                     vac_element['overview'],
                     closes,
