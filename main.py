@@ -1,5 +1,5 @@
 from selenium import webdriver # web scrapping
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException,TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -304,7 +304,9 @@ def main():
 
             # find number of courses
             try:
-                page_driver.get(occ_info['courses_url_escaped'])
+                base_url = "https://www.yourcareer.gov.au"
+                full_courses_url = urljoin(base_url, occ_info['courses_url_escaped'])
+                page_driver.get(full_courses_url)
                 time.sleep(5)
                 element = WebDriverWait(page_driver, 10).until(EC.presence_of_element_located((By.CSS_SELECTOR, 'div[aria-live="polite"] strong[aria-level="2"]')))
                 raw_num_courses = element.text
@@ -313,7 +315,7 @@ def main():
                     num_courses = matches[-1]
                 else:
                     num_courses = "No number of courses given"
-            except NoSuchElementException:
+            except (NoSuchElementException, TimeoutException):
                 num_courses = "Failed to load courses page"
 
 
