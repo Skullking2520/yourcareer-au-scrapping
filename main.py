@@ -306,11 +306,12 @@ def main():
             try:
                 base_url = "https://www.yourcareer.gov.au"
                 if occ_info['courses_url_escaped'] != "No link given":
-                    extra_params = "&address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25"
-                    if extra_params not in occ_info['courses_url_escaped']:
-                        courses_url_full = occ_info['courses_url_escaped'] + extra_params
+                    extra_params = "address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25"
+                    if '?' in occ_info['courses_url_escaped']:
+                        courses_url_full = occ_info['courses_url_escaped'] + "&" + extra_params
                     else:
-                        courses_url_full = occ_info['courses_url_escaped']
+                        courses_url_full = occ_info['courses_url_escaped'] + "?" + extra_params
+                    print("Courses URL:", courses_url_full)
                 else:
                     courses_url_full = "No link given"
                     
