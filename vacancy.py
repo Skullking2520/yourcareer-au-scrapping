@@ -161,11 +161,11 @@ def main():
         seen_jobs = set()
         check_list = check_extract()
 
+        driver.get(va_url)
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        time.sleep(3)
+        
         while True:
-            driver.get(va_url)
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
-
             vacancies = driver.find_elements(By.CSS_SELECTOR,
                 "section[class='mint-search-result-item has-img has-actions has-preheading']")
             time.sleep(3)
