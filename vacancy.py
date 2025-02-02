@@ -2,6 +2,8 @@ from urllib.parse import urljoin #join url
 from selenium import webdriver # web scrapping
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 from google.oauth2.service_account import Credentials # google doc
 import time
 import os
@@ -228,7 +230,12 @@ def main():
             print(f"current page: {vac_element['job_title']}")
 
             try:
-                company = driver.find_element(By.XPATH, "//div[@class='text-lg' and @dir='auto']//p/a").text
+                company_elem = WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located(
+                        (By.XPATH, "//*[@id='find-a-job']/div/div/div[1]/div/div/div[1]/div/div/div[2]/p/a")
+                    )
+                )
+                company = company_elem.text
             except NoSuchElementException:
                 company = "No company given"
 
