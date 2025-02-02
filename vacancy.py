@@ -1,6 +1,6 @@
 from urllib.parse import urljoin #join url
 from selenium import webdriver # web scrapping
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -231,12 +231,12 @@ def main():
 
             try:
                 company_elem = WebDriverWait(driver, 10).until(
-                    EC.presence_of_element_located(
-                        (By.XPATH, "//*[@id='find-a-job']/div/div/div[1]/div/div/div[1]/div/div/div[2]/p/a")
+                    EC.visibility_of_element_located(
+                        (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
                     )
                 )
                 company = company_elem.text
-            except NoSuchElementException:
+            except (NoSuchElementException, TimeoutException):
                 company = "No company given"
 
             if (vac_element['job_title'].lower(), company.lower()) in seen_jobs:
