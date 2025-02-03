@@ -104,7 +104,7 @@ def main():
         url = f"https://www.yourcareer.gov.au/occupations?address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25&pageNumber={page_num}"
         page_driver.get(url)
         page_driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(3)
+        time.sleep(5)
         print(f"current page number: {page_num}")
 
         occupations = page_driver.find_elements(By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")
@@ -171,7 +171,7 @@ def main():
         # open detail page
         page_driver.get(occ_info["detail_url"])
         page_driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(3)
+        time.sleep(5)
         current_url = page_driver.current_url
         print(f"current page: {occ_info['occupation_name']}")
         codes = find_occupation_code(current_url)
