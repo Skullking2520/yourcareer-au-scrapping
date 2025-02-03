@@ -47,7 +47,7 @@ jobs:
         python main.py
 
   run-vacancies-scraping:
-    runs-on: [self-hosted, runner-windows]
+    runs-on: [self-hosted, runner]
 
     steps:
     - name: Wait for 15 minutes
