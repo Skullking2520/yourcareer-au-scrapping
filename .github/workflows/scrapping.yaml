@@ -22,8 +22,12 @@ jobs:
     - name: Install Google Chrome
       shell: powershell
       run: |
-        Write-Host "Installing Google Chrome via winget...".
+        Write-Host "Installing Google Chrome via winget..."
         winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -eq 1) {
+            Write-Host "Chrome is already installed or no upgrade available. Continuing..."
+            exit 0
+        }
 
     - name: Install Chromedriver
       shell: powershell
@@ -49,7 +53,7 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python main.py
-
+        
   run-vacancies-scraping:
     runs-on: [self-hosted, runner-2]
 
@@ -57,7 +61,7 @@ jobs:
     - name: Wait for 15 minutes
       shell: powershell
       run: Start-Sleep -Seconds 900
-
+    
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -71,6 +75,10 @@ jobs:
       run: |
         Write-Host "Installing Google Chrome via winget..."
         winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
+        if ($LASTEXITCODE -eq 1) {
+            Write-Host "Chrome is already installed or no upgrade available. Continuing..."
+            exit 0
+        }
 
     - name: Install Chromedriver
       shell: powershell
