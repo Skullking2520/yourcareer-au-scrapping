@@ -50,9 +50,9 @@ jobs:
     runs-on: [self-hosted, runner]
 
     steps:
-    # - name: Wait for 15 minutes
-    #   shell: powershell
-    #   run: Start-Sleep -Seconds 900
+    - name: Wait for 15 minutes
+      shell: powershell
+      run: Start-Sleep -Seconds 900
 
     - name: Checkout repository
       uses: actions/checkout@v3
@@ -61,25 +61,6 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-
-    # - name: Install Chromedriver
-    #   shell: powershell
-    #   run: |
-    #     Write-Host "Downloading Chromedriver..."
-    #     $chromedriverUrl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/132.0.6899.13/win64/chromedriver-win64.zip"
-    #     try {
-    #         Invoke-WebRequest -Uri $chromedriverUrl -OutFile "chromedriver-win64.zip" -ErrorAction Stop
-    #     }
-    #     catch {
-    #         Write-Host "Failed to download Chromedriver from $chromedriverUrl. Exiting..."
-    #         exit 1
-    #     }
-    #     Write-Host "Extracting Chromedriver..."
-    #     Expand-Archive -Path "chromedriver-win64.zip" -DestinationPath "chromedriver" -Force
-    #     $chromedriverPath = Join-Path (Resolve-Path "chromedriver") "chromedriver.exe"
-    #     Write-Host "Adding Chromedriver directory to PATH"
-    #     $env:PATH = "$env:PATH;$([System.IO.Path]::GetDirectoryName($chromedriverPath))"
-    #     Write-Host "Chromedriver installed at: $chromedriverPath"
 
     - name: Install dependencies
       shell: powershell
