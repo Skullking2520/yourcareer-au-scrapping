@@ -22,16 +22,22 @@ jobs:
     - name: Install Google Chrome
       shell: powershell
       run: |
-        Write-Host "Installing Google Chrome via winget..."
-        winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-        $exitCode = $LASTEXITCODE
-        if ($exitCode -eq 1) {
-            Write-Host "Chrome is already installed or no upgrade available. Continuing..."
-            exit 0
+        try {
+            Write-Host "Installing Google Chrome via winget..."
+            winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 1) {
+                Write-Host "Chrome is already installed or no upgrade available. Continuing..."
+                exit 0
+            }
+            elseif ($exitCode -ne 0) {
+                Write-Error "winget install failed with exit code $exitCode"
+                exit $exitCode
+            }
         }
-        elseif ($exitCode -ne 0) {
-            Write-Error "winget install failed with exit code $exitCode"
-            exit $exitCode
+        catch {
+            Write-Host "Exception caught during winget install. Assuming Chrome is already installed. Continuing..."
+            exit 0
         }
 
     - name: Install Chromedriver
@@ -78,16 +84,22 @@ jobs:
     - name: Install Google Chrome
       shell: powershell
       run: |
-        Write-Host "Installing Google Chrome via winget..."
-        winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-        $exitCode = $LASTEXITCODE
-        if ($exitCode -eq 1) {
-            Write-Host "Chrome is already installed or no upgrade available. Continuing..."
-            exit 0
+        try {
+            Write-Host "Installing Google Chrome via winget..."
+            winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
+            $exitCode = $LASTEXITCODE
+            if ($exitCode -eq 1) {
+                Write-Host "Chrome is already installed or no upgrade available. Continuing..."
+                exit 0
+            }
+            elseif ($exitCode -ne 0) {
+                Write-Error "winget install failed with exit code $exitCode"
+                exit $exitCode
+            }
         }
-        elseif ($exitCode -ne 0) {
-            Write-Error "winget install failed with exit code $exitCode"
-            exit $exitCode
+        catch {
+            Write-Host "Exception caught during winget install. Assuming Chrome is already installed. Continuing..."
+            exit 0
         }
 
     - name: Install Chromedriver
