@@ -24,9 +24,14 @@ jobs:
       run: |
         Write-Host "Installing Google Chrome via winget..."
         winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-        if ($LASTEXITCODE -eq 1) {
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 1) {
             Write-Host "Chrome is already installed or no upgrade available. Continuing..."
             exit 0
+        }
+        elseif ($exitCode -ne 0) {
+            Write-Error "winget install failed with exit code $exitCode"
+            exit $exitCode
         }
 
     - name: Install Chromedriver
@@ -53,7 +58,7 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python main.py
-        
+
   run-vacancies-scraping:
     runs-on: [self-hosted, runner-2]
 
@@ -75,9 +80,14 @@ jobs:
       run: |
         Write-Host "Installing Google Chrome via winget..."
         winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-        if ($LASTEXITCODE -eq 1) {
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 1) {
             Write-Host "Chrome is already installed or no upgrade available. Continuing..."
             exit 0
+        }
+        elseif ($exitCode -ne 0) {
+            Write-Error "winget install failed with exit code $exitCode"
+            exit $exitCode
         }
 
     - name: Install Chromedriver
