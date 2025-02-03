@@ -48,6 +48,7 @@ jobs:
 
   run-vacancies-scraping:
     runs-on: [self-hosted, runner]
+    timeout-minutes: 0
 
     steps:
     - name: Wait for 15 minutes
