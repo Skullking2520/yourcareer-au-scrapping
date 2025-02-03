@@ -67,24 +67,19 @@ jobs:
       run: |
         $chromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe"
         if (Test-Path $chromePath) {
-            Write-Host "Chrome is already installed at $chromePath. Skipping installation."
             exit 0
         }
         else {
-            Write-Host "Chrome not found. Installing via winget..."
             try {
                 $output = winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements -ErrorAction Stop 2>&1
                 Write-Host $output
             }
             catch {
                 $err = $_.Exception.Message
-                Write-Host "winget install error: $err"
                 if ($err -match "이미 설치된 기존 패키지를 찾았습니다") {
-                    Write-Host "Chrome is already installed or no upgrade available. Continuing..."
                     exit 0
                 }
                 else {
-                    Write-Error "winget install failed with error: $err"
                     exit 1
                 }
             }
