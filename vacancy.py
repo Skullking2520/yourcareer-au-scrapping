@@ -96,8 +96,7 @@ def check_extract():
     va_header = va_sheet.row_values(1)
 
     try:
-        va_title = va_header.index("job title") + 1
-        va_company = va_header.index("company") + 1
+        va_code = va_header.index("job code") + 1
     except ValueError as e:
         print("Could not detect requested row", e)
         return
@@ -107,19 +106,16 @@ def check_extract():
     check_list = []
 
     for row_num, row in enumerate(all_rows, start=2):
-        title = row[va_title - 1] if len(row) >= va_title else ""
-        company = row[va_company - 1] if len(row) >= va_company else ""
-        check_list.append([title, company])
+        code = row[va_code - 1] if len(row) >= va_code else ""
+        check_list.append(code)
     return check_list
 
-
-def update_occupation_cell(job_title, company, va_occupation):
+def update_occupation_cell(job_code, va_occupation):
     va_sheet = get_worksheet("Vacancies")
     va_header = va_sheet.row_values(1)
 
     try:
-        job_title_index = va_header.index("job title") + 1
-        company_index = va_header.index("company") + 1
+        job_code_index = va_header.index("job code") + 1
         occupation_index = va_header.index("occupation") + 1
     except ValueError:
         return
@@ -127,10 +123,9 @@ def update_occupation_cell(job_title, company, va_occupation):
     all_rows = va_sheet.get_all_values()[1:]
 
     for row_num, row in enumerate(all_rows, start=2):
-        title = row[job_title_index - 1] if len(row) >= job_title_index else ""
-        comp = row[company_index - 1] if len(row) >= company_index else ""
+        code = row[job_code_index - 1] if len(row) >= job_code_index else ""
 
-        if [job_title.lower(), company.lower()] == [title.lower(), comp.lower()]:
+        if job_code == code:
             current_value = va_sheet.cell(row_num, occupation_index).value
 
             if current_value:
@@ -166,17 +161,17 @@ def main():
         driver.get(va_url)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
-        
+
         while True:
             vacancies = driver.find_elements(By.CSS_SELECTOR,
-                "section[class='mint-search-result-item has-img has-actions has-preheading']")
+                                             "section[class='mint-search-result-item has-img has-actions has-preheading']")
             time.sleep(3)
 
             for vacancy in vacancies:
                 # find job title
                 try:
                     base_url = "https://www.workforceaustralia.gov.au"
-                    job_hyper = vacancy.find_element(By.CSS_SELECTOR,"a[class='mint-link link']")
+                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
                     job_title = job_hyper.text
                     job_href = job_hyper.get_attribute("href")
                     job_link = urljoin(base_url, job_href)
@@ -187,7 +182,7 @@ def main():
                     job_code = "No job code given"
 
                 try:
-                    raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR,"div[class='preheading']").text
+                    raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
                     match = re.search(r'\d+', raw_date_added_dif)
                     if match:
                         date_added_dif = int(match.group())
@@ -201,7 +196,7 @@ def main():
                 time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
                 try:
-                    overview = vacancy.find_element(By.CSS_SELECTOR,"span[class='mint-blurb__text-width']").text
+                    overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
                 except NoSuchElementException:
                     overview = "No overview given"
 
@@ -239,7 +234,7 @@ def main():
             except (NoSuchElementException, TimeoutException):
                 company = "No company given"
 
-            if (vac_element['job_title'].lower(), company.lower()) in seen_jobs:
+            if vac_element['job_code'] in seen_jobs:
                 print(f"Duplicate found, skipping: {company}, {vac_element['job_title']}")
                 continue
 
@@ -255,7 +250,7 @@ def main():
                 ).text
             except NoSuchElementException:
                 salary = "No salary given"
-            
+
             try:
                 tenure = driver.find_element(
                     By.CSS_SELECTOR,
@@ -265,7 +260,8 @@ def main():
                 tenure = "No tenure given"
 
             try:
-                closes = driver.find_element(By.CSS_SELECTOR, "ul.job-info-metadata > li:nth-child(4) > span:nth-child(2)").text
+                closes = driver.find_element(By.CSS_SELECTOR,
+                                             "ul.job-info-metadata > li:nth-child(4) > span:nth-child(2)").text
             except NoSuchElementException:
                 closes = "No close time given"
 
@@ -308,8 +304,8 @@ def main():
 
             va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
 
-            if [vac_element['job_title'].lower(), company.lower()] in check_list:
-                update_occupation_cell(vac_element['job_title'], company, va_occupation)
+            if vac_element['job_code'] in check_list:
+                update_occupation_cell(vac_element['job_code'], va_occupation)
             else:
                 va_data = [
                     va_occupation,
@@ -328,11 +324,12 @@ def main():
                     closes,
                     job_description
                 ]
-                append_row_with_retry(va_sheet,va_data)
-                seen_jobs.add((vac_element['job_title'].lower(), company.lower()))
+                append_row_with_retry(va_sheet, va_data)
+                seen_jobs.add(vac_element['job_code'])
 
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
+
 
 if __name__ == "__main__":
     main()
