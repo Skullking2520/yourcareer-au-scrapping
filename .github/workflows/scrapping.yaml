@@ -62,29 +62,6 @@ jobs:
       with:
         python-version: "3.x"
 
-    - name: Install Google Chrome (if not installed)
-      shell: powershell
-      run: |
-        $chromePath = "C:\Program Files\Google\Chrome\Application\chrome.exe"
-        if (Test-Path $chromePath) {
-            exit 0
-        }
-        else {
-            try {
-                $output = winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements -ErrorAction Stop 2>&1
-                Write-Host $output
-            }
-            catch {
-                $err = $_.Exception.Message
-                if ($err -match "이미 설치된 기존 패키지를 찾았습니다") {
-                    exit 0
-                }
-                else {
-                    exit 1
-                }
-            }
-        }
-
     - name: Install Chromedriver
       shell: powershell
       run: |
