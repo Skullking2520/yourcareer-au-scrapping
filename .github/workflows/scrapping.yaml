@@ -8,7 +8,7 @@ on:
 
 jobs:
   run-occupation-scraping:
-    runs-on: self-hosted
+    runs-on: [self-hosted, BOOK-QSMFSE0LVK]
 
     steps:
     - name: Checkout repository
@@ -47,7 +47,7 @@ jobs:
         python main.py
         
   run-vacancies-scraping:
-    runs-on: self-hosted
+    runs-on: [self-hosted, BOOK-QSMFSE0LVK2]
 
     steps:
     - name: Wait for 15 minutes
