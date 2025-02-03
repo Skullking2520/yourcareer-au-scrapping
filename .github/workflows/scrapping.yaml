@@ -65,22 +65,28 @@ jobs:
     - name: Install Google Chrome
       shell: powershell
       run: |
-        Write-Host "Installing Google Chrome via winget..."
-        winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
-        $exitCode = $LASTEXITCODE
-        if ($exitCode -eq 1) {
-            Write-Host "Chrome is already installed or no upgrade available. Continuing..."
-            exit 0
+        try {
+            Write-Host "Installing Google Chrome via winget..."
+            $output = winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements -ErrorAction Stop 2>&1
+            Write-Host $output
         }
-        elseif ($exitCode -ne 0) {
-            Write-Error "winget install failed with exit code $exitCode"
-            exit $exitCode
+        catch {
+            $err = $_.Exception.Message
+            Write-Host "winget install error: $err"
+            if ($err -match "이미 설치된 기존 패키지를 찾았습니다") {
+                Write-Host "Chrome is already installed or no upgrade available. Continuing..."
+                exit 0
+            }
+            else {
+                Write-Error "winget install failed with error: $err"
+                exit 1
+            }
         }
-
+  
     - name: Install Chromedriver
       shell: powershell
       run: |
-        Write-Host "Downloading Chromedriver..."\
+        Write-Host "Downloading Chromedriver..."
         $chromedriverUrl = "https://edgedl.me.gvt1.com/edgedl/chrome/chrome-for-testing/132.0.6899.13/win64/chromedriver-win64.zip"
         try {
             Invoke-WebRequest -Uri $chromedriverUrl -OutFile "chromedriver-win64.zip" -ErrorAction Stop
