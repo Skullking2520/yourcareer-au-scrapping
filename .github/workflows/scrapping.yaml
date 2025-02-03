@@ -20,39 +20,47 @@ jobs:
         python-version: "3.x"
 
     - name: Install Google Chrome
+      shell: powershell
       run: |
-        set -ex
-        sudo apt-get update -y
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt install -y ./google-chrome-stable_current_amd64.deb
-        sudo apt-get install -y -f
+        Write-Host "Installing Google Chrome via winget..."
+        # --accept-package-agreements와 --accept-source-agreements 옵션을 추가하여 자동 설치합니다.
+        winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
 
     - name: Install Chromedriver
+      shell: powershell
       run: |
-        sudo apt-get install -y unzip
-        wget https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/linux64/chromedriver-linux64.zip
-        unzip chromedriver-linux64.zip
-        sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
+        Write-Host "Downloading Chromedriver..."
+        # Windows용 Chromedriver 다운로드 URL (버전에 따라 변경 필요)
+        Invoke-WebRequest -Uri "https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/windows64/chromedriver-win64.zip" -OutFile "chromedriver-win64.zip"
+        Write-Host "Extracting Chromedriver..."
+        Expand-Archive -Path "chromedriver-win64.zip" -DestinationPath "chromedriver" -Force
+        $chromedriverPath = Join-Path (Resolve-Path "chromedriver") "chromedriver.exe"
+        Write-Host "Adding Chromedriver directory to PATH"
+        # 현재 세션의 PATH에 chromedriver 폴더를 추가 (Python 스크립트에서 chromedriver를 PATH에서 찾을 수 있도록)
+        $env:PATH = "$env:PATH;$([System.IO.Path]::GetDirectoryName($chromedriverPath))"
+        Write-Host "Chromedriver installed at: $chromedriverPath"
 
     - name: Install dependencies
+      shell: powershell
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
     - name: Run Occupation Scraping
+      shell: powershell
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python main.py
-        
+
   run-vacancies-scraping:
     runs-on: [self-hosted, runner-2]
 
     steps:
     - name: Wait for 15 minutes
-      run: sleep 900
-    
+      shell: powershell
+      run: Start-Sleep -Seconds 900
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -62,27 +70,31 @@ jobs:
         python-version: "3.x"
 
     - name: Install Google Chrome
+      shell: powershell
       run: |
-        set -ex
-        sudo apt-get update -y
-        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-        sudo apt install -y ./google-chrome-stable_current_amd64.deb
-        sudo apt-get install -y -f
+        Write-Host "Installing Google Chrome via winget..."
+        winget install --id=Google.Chrome --silent --accept-package-agreements --accept-source-agreements
 
     - name: Install Chromedriver
+      shell: powershell
       run: |
-        sudo apt-get install -y unzip
-        wget https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/linux64/chromedriver-linux64.zip
-        unzip chromedriver-linux64.zip
-        sudo mv chromedriver-linux64/chromedriver /usr/local/bin/
-        sudo chmod +x /usr/local/bin/chromedriver
+        Write-Host "Downloading Chromedriver..."
+        Invoke-WebRequest -Uri "https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/windows64/chromedriver-win64.zip" -OutFile "chromedriver-win64.zip"
+        Write-Host "Extracting Chromedriver..."
+        Expand-Archive -Path "chromedriver-win64.zip" -DestinationPath "chromedriver" -Force
+        $chromedriverPath = Join-Path (Resolve-Path "chromedriver") "chromedriver.exe"
+        Write-Host "Adding Chromedriver directory to PATH"
+        $env:PATH = "$env:PATH;$([System.IO.Path]::GetDirectoryName($chromedriverPath))"
+        Write-Host "Chromedriver installed at: $chromedriverPath"
 
     - name: Install dependencies
+      shell: powershell
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
+
     - name: Run Vacancies Scraping
+      shell: powershell
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
