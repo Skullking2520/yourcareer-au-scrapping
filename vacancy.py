@@ -48,7 +48,7 @@ def set_vacancy_sheet():
     # set for vacancy sheet
     worksheet = get_worksheet("Vacancies")
     worksheet.clear()
-    headers = ["occupation","date added", "time scrapped", "job title", "job link", "job code", "company", "salary", "address", "lat", "long", "tenure","overview", "closes","description"]
+    headers = ["occupation", "occupation_link", "date added", "time scrapped", "job title", "job link", "job code", "company", "salary", "address", "lat", "long", "tenure","overview", "closes","description"]
     worksheet.append_row(headers)
     return worksheet
 
@@ -58,8 +58,8 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             worksheet.append_row(data, value_input_option="USER_ENTERED")
             return
         except gspread.exceptions.APIError as e:
-            if any(code in str(e) for code in ["500", "502", "503", "504"]):
-                print(f"Error 503 occurred. Retry after {delay}seconds ({attempt+1}/{retries})")
+            if any(code in str(e) for code in ["500", "502", "503", "504"]) or isinstance(e, ReadTimeout):
+                print(f"Error occurred. Retry after {delay}seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
             else:
                 raise
@@ -77,18 +77,16 @@ def extract():
         return
 
     all_rows = oc_sheet.get_all_values()[1:]
-
     occupation_list = []
 
-    for row_num, row in enumerate(all_rows, start=2):
+    for row in all_rows:
         occupation = row[occupation_idx - 1] if len(row) >= occupation_idx else ""
-        occupation_link = row[occupation_link_idx - 1] if len(row) >= occupation_link_idx else ""
+        raw_occ_link = row[occupation_link_idx - 1] if len(row) >= occupation_link_idx else ""
         vacancies_value = row[vacancies_idx - 1] if len(row) >= vacancies_idx else ""
 
         vacancies_url = remove_hyperlink(vacancies_value)
-
-        mod_va_occupation = f"{occupation}:{occupation_link}"
-        occupation_list.append([mod_va_occupation, vacancies_url])
+        mod_va_occupation = f"{occupation}:{raw_occ_link}"
+        occupation_list.append([occupation, mod_va_occupation, vacancies_url])
     return occupation_list
 
 def check_extract():
@@ -110,30 +108,28 @@ def check_extract():
         check_list.append(code)
     return check_list
 
-def update_occupation_cell(job_code, va_occupation):
+def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation):
     va_sheet = get_worksheet("Vacancies")
     va_header = va_sheet.row_values(1)
 
     try:
         job_code_index = va_header.index("job code") + 1
         occupation_index = va_header.index("occupation") + 1
+        occ_link_index = va_header.index("occupation_link") + 1
     except ValueError:
         return
 
     all_rows = va_sheet.get_all_values()[1:]
-
     for row_num, row in enumerate(all_rows, start=2):
         code = row[job_code_index - 1] if len(row) >= job_code_index else ""
-
         if job_code == code:
-            current_value = va_sheet.cell(row_num, occupation_index).value
+            current_occ = va_sheet.cell(row_num, occupation_index).value
+            updated_occ = f"{current_occ},{new_occupation}" if current_occ else new_occupation
+            va_sheet.update_cell(row_num, occupation_index, updated_occ)
 
-            if current_value:
-                new_value = current_value + "," + str(va_occupation)
-            else:
-                new_value = str(va_occupation)
-
-            va_sheet.update_cell(row_num, occupation_index, new_value)
+            current_occ_link = va_sheet.cell(row_num, occ_link_index).value
+            updated_occ_link = f"{current_occ_link},{new_mod_va_occupation}" if current_occ_link else new_mod_va_occupation
+            va_sheet.update_cell(row_num, occ_link_index, updated_occ_link)
             break
 
 def remove_hyperlink(cell_value):
@@ -151,8 +147,9 @@ def main():
     driver = set_driver()
 
     for url_data in extract():
-        va_occupation = url_data[0]
-        va_url = url_data[1]
+        occupation = url_data[0]
+        va_occupation = url_data[1]
+        va_url = url_data[2]
 
         all_vacancy_data = []
         seen_jobs = set()
@@ -305,9 +302,10 @@ def main():
             va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
 
             if vac_element['job_code'] in check_list:
-                update_occupation_cell(vac_element['job_code'], va_occupation)
+                update_occupation_cell(vac_element['job_code'], occupation, va_occupation)
             else:
                 va_data = [
+                    occupation,
                     va_occupation,
                     vac_element["date_added"],
                     vac_element["time_scrapped"],
