@@ -10,6 +10,7 @@ import os
 import re
 import gspread
 import datetime
+import json
 
 key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
 if not key_content:
@@ -27,6 +28,8 @@ spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTN
 credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
 gc = gspread.authorize(credentials)
 spreadsheet = gc.open_by_url(spreadsheet_url)
+PROGRESS_FILE = "progress.txt"
+# {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0} for reset
 
 def set_driver():
     # set options and driver settings
@@ -132,6 +135,10 @@ def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation, retr
             for attempt in range(retries):
                 try:
                     current_occ = va_sheet.cell(row_num, occupation_index).value
+
+                    if current_occ and new_occupation in current_occ.split(","):
+                        break
+                    
                     updated_occ = f"{current_occ},{new_occupation}" if current_occ else new_occupation
                     va_sheet.update_cell(row_num, occupation_index, updated_occ)
                     
@@ -140,7 +147,6 @@ def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation, retr
                     va_sheet.update_cell(row_num, occ_link_index, updated_occ_link)
                     break
                 except Exception as e:
-                    print(f"에러 발생 (row {row_num}): {e}. {delay}초 후 재시도합니다. 시도 {attempt+1}/{retries}")
                     time.sleep(delay)
             break
 
@@ -154,12 +160,29 @@ def remove_hyperlink(cell_value):
             return match.group(1)
     return cell_value
 
+def load_progress():
+    try:
+        with open(PROGRESS_FILE, "r") as f:
+            progress = json.load(f)
+            return progress
+    except Exception:
+        return {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
+
+def save_progress(progress):
+    with open(PROGRESS_FILE, "w") as f:
+        json.dump(progress, f)
+
 def main():
     init = set_vacancy_sheet()
     va_sheet = get_worksheet("Vacancies")
     driver = set_driver()
 
-    for url_data in extract():
+    progress = load_progress()
+    url_data_list = list(extract())
+    outer = progress.get("outer", 0)
+    
+    while outer < len(url_data_list):
+        url_data = url_data_list[outer]
         occupation = url_data[0]
         va_occupation = url_data[1]
         va_url = url_data[2]
@@ -172,172 +195,200 @@ def main():
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
 
-        while True:
-            vacancies = driver.find_elements(By.CSS_SELECTOR,
-                                             "section[class='mint-search-result-item has-img has-actions has-preheading']")
-            time.sleep(3)
-
-            for vacancy in vacancies:
-                # find job title
-                try:
-                    base_url = "https://www.workforceaustralia.gov.au"
-                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
-                    job_title = job_hyper.text
-                    job_href = job_hyper.get_attribute("href")
-                    job_link = urljoin(base_url, job_href)
-                    job_code = job_href.split('/')[-1]
-                except NoSuchElementException:
-                    job_title = "No job title given"
-                    job_link = "No job link given"
-                    job_code = "No job code given"
-
-                try:
-                    raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
-                    match = re.search(r'\d+', raw_date_added_dif)
-                    if match:
-                        date_added_dif = int(match.group())
-                    else:
-                        date_added_dif = 1
-                    today = datetime.date.today()
-                    date_added = today - datetime.timedelta(days=date_added_dif)
-                except NoSuchElementException:
-                    date_added = "No date added given"
-
-                time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
-                try:
-                    overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
-                except NoSuchElementException:
-                    overview = "No overview given"
-
-                vacancy_data = {
-                    "job_title": job_title,
-                    "job_link": job_link,
-                    "job_code": job_code,
-                    "date_added": str(date_added),
-                    "time_scrapped": str(time_scrapped),
-                    "overview": overview
-                }
-                all_vacancy_data.append(vacancy_data)
-
-            try:
-                next_button = driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-                driver.execute_script("arguments[0].click();", next_button)
+        if phase == "vacancy_extraction":
+            while True:
+                vacancies = driver.find_elements(By.CSS_SELECTOR,
+                                                 "section[class='mint-search-result-item has-img has-actions has-preheading']")
                 time.sleep(3)
-            except NoSuchElementException:
-                break
-
-        for vac_element in all_vacancy_data:
-            # open detail page
-            driver.get(vac_element["job_link"])
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
-            print(f"current page: {vac_element['job_title']}")
-
-            try:
-                company_elem = WebDriverWait(driver, 10).until(
-                    EC.visibility_of_element_located(
-                        (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
-                    )
-                )
-                company = company_elem.text
-            except (NoSuchElementException, TimeoutException):
-                company = "No company given"
-
-            if vac_element['job_code'] in seen_jobs:
-                print(f"Duplicate found, skipping: {company}, {vac_element['job_title']}")
-                continue
-
-            try:
-                address = driver.find_element(By.CSS_SELECTOR, "div[class='address-text']").text
-            except NoSuchElementException:
-                address = "No address given"
-
-            try:
-                salary = driver.find_element(
-                    By.CSS_SELECTOR,
-                    "ul.job-info-metadata > li:nth-child(2) > span:nth-of-type(2)"
-                ).text
-            except NoSuchElementException:
-                salary = "No salary given"
-
-            try:
-                tenure = driver.find_element(
-                    By.CSS_SELECTOR,
-                    "ul.job-info-metadata > li:nth-child(3) > span:nth-of-type(2)"
-                ).text
-            except NoSuchElementException:
-                tenure = "No tenure given"
-
-            try:
-                closes = driver.find_element(By.CSS_SELECTOR,
-                                             "ul.job-info-metadata > li:nth-child(4) > span:nth-child(2)").text
-            except NoSuchElementException:
-                closes = "No close time given"
-
-            try:
-                all_cards = driver.find_elements(By.CSS_SELECTOR, "div.card-copy")
-                description_card = None
-                for card in all_cards:
+    
+                vac_idx = vacancy_index
+                while vac_idx < len(vacancies):
+                    vacancy = vacancies[vac_idx]
+                    # find job title data
                     try:
-                        header = card.find_element(By.CSS_SELECTOR, "h2")
-                        if "Job description" in header.text:
-                            description_card = card
-                            break
-                    except Exception:
-                        continue
-                if description_card:
-                    paragraphs = description_card.find_elements(By.TAG_NAME, "p")
-                    job_description = "\n".join([p.text for p in paragraphs])
-                else:
+                        base_url = "https://www.workforceaustralia.gov.au"
+                        job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
+                        job_title = job_hyper.text
+                        job_href = job_hyper.get_attribute("href")
+                        job_link = urljoin(base_url, job_href)
+                        job_code = job_href.split('/')[-1]
+                    except NoSuchElementException:
+                        job_title = "No job title given"
+                        job_link = "No job link given"
+                        job_code = "No job code given"
+    
+                    try:
+                        raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
+                        match = re.search(r'\d+', raw_date_added_dif)
+                        if match:
+                            date_added_dif = int(match.group())
+                        else:
+                            date_added_dif = 1
+                        today = datetime.date.today()
+                        date_added = today - datetime.timedelta(days=date_added_dif)
+                    except NoSuchElementException:
+                        date_added = "No date added given"
+    
+                    time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+    
+                    try:
+                        overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
+                    except NoSuchElementException:
+                        overview = "No overview given"
+    
+                    vacancy_data = {
+                        "job_title": job_title,
+                        "job_link": job_link,
+                        "job_code": job_code,
+                        "date_added": str(date_added),
+                        "time_scrapped": str(time_scrapped),
+                        "overview": overview
+                    }
+                    all_vacancy_data.append(vacancy_data)
+
+                    vac_idx += 1
+                    progress["vacancy_index"] = vac_idx
+                    save_progress(progress)
+
+                vacancy_index = 0
+                progress["vacancy_index"] = 0
+                save_progress(progress)
+                
+                try:
+                    next_button = driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
+                    driver.execute_script("arguments[0].click();", next_button)
+                    time.sleep(3)
+                except NoSuchElementException:
+                    break
+                    
+            progress["phase"] = "detail_extraction"
+            progress["detail_index"] = 0
+            save_progress(progress)
+        else:
+            pass
+
+        if progress.get("phase") == "detail_extraction":
+            detail_idx = progress.get("detail_index", 0)
+            while detail_idx < len(all_vacancy_data):
+                vac_element = all_vacancy_data[detail_idx]
+                # open detail page
+                driver.get(vac_element["job_link"])
+                driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(3)
+                print(f"current page: {vac_element['job_title']}")
+    
+                try:
+                    company_elem = WebDriverWait(driver, 10).until(
+                        EC.visibility_of_element_located(
+                            (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
+                        )
+                    )
+                    company = company_elem.text
+                except (NoSuchElementException, TimeoutException):
+                    company = "No company given"
+    
+                if vac_element['job_code'] in seen_jobs:
+                    print(f"Duplicate found, skipping: {company}, {vac_element['job_title']}")
+                    continue
+    
+                try:
+                    address = driver.find_element(By.CSS_SELECTOR, "div[class='address-text']").text
+                except NoSuchElementException:
+                    address = "No address given"
+    
+                try:
+                    salary = driver.find_element(
+                        By.CSS_SELECTOR,
+                        "ul.job-info-metadata > li:nth-child(2) > span:nth-of-type(2)"
+                    ).text
+                except NoSuchElementException:
+                    salary = "No salary given"
+    
+                try:
+                    tenure = driver.find_element(
+                        By.CSS_SELECTOR,
+                        "ul.job-info-metadata > li:nth-child(3) > span:nth-of-type(2)"
+                    ).text
+                except NoSuchElementException:
+                    tenure = "No tenure given"
+    
+                try:
+                    closes = driver.find_element(By.CSS_SELECTOR,
+                                                 "ul.job-info-metadata > li:nth-child(4) > span:nth-child(2)").text
+                except NoSuchElementException:
+                    closes = "No close time given"
+    
+                try:
+                    all_cards = driver.find_elements(By.CSS_SELECTOR, "div.card-copy")
+                    description_card = None
+                    for card in all_cards:
+                        try:
+                            header = card.find_element(By.CSS_SELECTOR, "h2")
+                            if "Job description" in header.text:
+                                description_card = card
+                                break
+                        except Exception:
+                            continue
+                    if description_card:
+                        paragraphs = description_card.find_elements(By.TAG_NAME, "p")
+                        job_description = "\n".join([p.text for p in paragraphs])
+                    else:
+                        job_description = "No description given"
+    
+                except NoSuchElementException:
                     job_description = "No description given"
-
-            except NoSuchElementException:
-                job_description = "No description given"
-
-            try:
-                va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
-                link = va_map.get_attribute("href")
-                driver.get(link)
-                time.sleep(10)
-                map_url = driver.current_url
-                pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
-                match = re.search(pattern, map_url)
-                if match:
-                    va_lat, va_long = match.groups()
-                else:
+    
+                try:
+                    va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
+                    link = va_map.get_attribute("href")
+                    driver.get(link)
+                    time.sleep(10)
+                    map_url = driver.current_url
+                    pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
+                    match = re.search(pattern, map_url)
+                    if match:
+                        va_lat, va_long = match.groups()
+                    else:
+                        va_lat = "No lat given"
+                        va_long = "No long given"
+                except NoSuchElementException:
                     va_lat = "No lat given"
                     va_long = "No long given"
-            except NoSuchElementException:
-                va_lat = "No lat given"
-                va_long = "No long given"
-
-            va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
-
-            if vac_element['job_code'] in check_list:
-                update_occupation_cell(vac_element['job_code'], occupation, va_occupation)
-            else:
-                va_data = [
-                    occupation,
-                    va_occupation,
-                    vac_element["date_added"],
-                    vac_element["time_scrapped"],
-                    vac_element['job_title'],
-                    va_job_link,
-                    vac_element['job_code'],
-                    company,
-                    salary,
-                    address,
-                    va_lat,
-                    va_long,
-                    tenure,
-                    vac_element['overview'],
-                    closes,
-                    job_description
-                ]
-                append_row_with_retry(va_sheet, va_data)
-                seen_jobs.add(vac_element['job_code'])
-
+    
+                va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
+    
+                if vac_element['job_code'] in check_list:
+                    update_occupation_cell(vac_element['job_code'], occupation, va_occupation)
+                else:
+                    va_data = [
+                        occupation,
+                        va_occupation,
+                        vac_element["date_added"],
+                        vac_element["time_scrapped"],
+                        vac_element['job_title'],
+                        va_job_link,
+                        vac_element['job_code'],
+                        company,
+                        salary,
+                        address,
+                        va_lat,
+                        va_long,
+                        tenure,
+                        vac_element['overview'],
+                        closes,
+                        job_description
+                    ]
+                    append_row_with_retry(va_sheet, va_data)
+                    seen_jobs.add(vac_element['job_code'])
+                    
+                detail_idx += 1
+                progress["detail_index"] = detail_idx
+                save_progress(progress)
+                
+        outer += 1
+        progress = {"outer": outer, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
+        save_progress(progress)
+            
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
