@@ -182,6 +182,10 @@ def main():
     outer = progress.get("outer", 0)
     
     while outer < len(url_data_list):
+        phase = progress.get("phase", "vacancy_extraction")
+        vacancy_index = progress.get("vacancy_index", 0)
+        detail_idx = progress.get("detail_index", 0)
+        
         url_data = url_data_list[outer]
         occupation = url_data[0]
         va_occupation = url_data[1]
