@@ -85,6 +85,12 @@ def extract():
         vacancies_value = row[vacancies_idx - 1] if len(row) >= vacancies_idx else ""
 
         vacancies_url = remove_hyperlink(vacancies_value)
+
+        if vacancies_url:
+            vacancies_url = vacancies_url + "&jobAge=3"
+        else:
+            vacancies_url = ""
+
         mod_va_occupation = f"{occupation}:{raw_occ_link}"
         occupation_list.append([occupation, mod_va_occupation, vacancies_url])
     return occupation_list
@@ -108,7 +114,7 @@ def check_extract():
         check_list.append(code)
     return check_list
 
-def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation):
+def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation, retries=3, delay=5):
     va_sheet = get_worksheet("Vacancies")
     va_header = va_sheet.row_values(1)
 
@@ -123,14 +129,21 @@ def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation):
     for row_num, row in enumerate(all_rows, start=2):
         code = row[job_code_index - 1] if len(row) >= job_code_index else ""
         if job_code == code:
-            current_occ = va_sheet.cell(row_num, occupation_index).value
-            updated_occ = f"{current_occ},{new_occupation}" if current_occ else new_occupation
-            va_sheet.update_cell(row_num, occupation_index, updated_occ)
-
-            current_occ_link = va_sheet.cell(row_num, occ_link_index).value
-            updated_occ_link = f"{current_occ_link},{new_mod_va_occupation}" if current_occ_link else new_mod_va_occupation
-            va_sheet.update_cell(row_num, occ_link_index, updated_occ_link)
+            for attempt in range(retries):
+                try:
+                    current_occ = va_sheet.cell(row_num, occupation_index).value
+                    updated_occ = f"{current_occ},{new_occupation}" if current_occ else new_occupation
+                    va_sheet.update_cell(row_num, occupation_index, updated_occ)
+                    
+                    current_occ_link = va_sheet.cell(row_num, occ_link_index).value
+                    updated_occ_link = f"{current_occ_link},{new_mod_va_occupation}" if current_occ_link else new_mod_va_occupation
+                    va_sheet.update_cell(row_num, occ_link_index, updated_occ_link)
+                    break
+                except Exception as e:
+                    print(f"에러 발생 (row {row_num}): {e}. {delay}초 후 재시도합니다. 시도 {attempt+1}/{retries}")
+                    time.sleep(delay)
             break
+
 
 def remove_hyperlink(cell_value):
     # remove hyper link
