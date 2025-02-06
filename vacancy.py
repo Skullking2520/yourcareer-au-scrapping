@@ -5,6 +5,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from google.oauth2.service_account import Credentials # google doc
+from requests.exceptions import ReadTimeout
 import time
 import os
 import re
@@ -51,7 +52,7 @@ def set_vacancy_sheet():
     # set for vacancy sheet
     worksheet = get_worksheet("Vacancies")
     worksheet.clear()
-    headers = ["occupation", "occupation_link", "date added", "time scrapped", "job title", "job link", "job code", "company", "salary", "address", "lat", "long", "tenure","overview", "closes","description"]
+    headers = ["occupation", "occupation link", "date added", "time scrapped", "job title", "job link", "job code", "company", "salary", "address", "lat", "long", "tenure","overview", "closes","description"]
     worksheet.append_row(headers)
     return worksheet
 
@@ -124,7 +125,7 @@ def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation, retr
     try:
         job_code_index = va_header.index("job code") + 1
         occupation_index = va_header.index("occupation") + 1
-        occ_link_index = va_header.index("occupation_link") + 1
+        occ_link_index = va_header.index("occupation link") + 1
     except ValueError:
         return
 
