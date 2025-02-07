@@ -19,20 +19,21 @@ def load_progress_occ(progress_sheet):
         progress_json = progress_sheet.acell("A1").value
         if progress_json:
             progress = json.loads(progress_json)
+            progress.pop("all_occupation_data", None)
             return progress
         else:
             raise Exception("No progress value found in A1")
     except Exception:
         return {
-            "phase": "list",
-            "page_num": 1,
-            "detail_index": 0,
-            "all_occupation_data": [],
+            "phase": "list",        # "list" 또는 "details"
+            "page_num": 1,          # 리스트 페이지 번호
+            "detail_index": 0,      # 상세 페이지 인덱스
             "finished": False
         }
 
 def save_progress_occ(progress_sheet, progress):
-    progress_sheet.update_cell(1, 1, json.dumps(progress))
+    progress_sheet.update("A1", [[json.dumps(progress)]])
+
 
 def set_sheets():
     key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
@@ -42,7 +43,7 @@ def set_sheets():
     key_path = "service_account.json"
     with open(key_path, "w") as f:
         f.write(key_content)
-
+    
     scopes = [
         'https://www.googleapis.com/auth/spreadsheets',
         'https://www.googleapis.com/auth/drive'
@@ -52,16 +53,16 @@ def set_sheets():
     spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
     sh = gc.open_by_url(spreadsheet_url)
 
-    sheet_name = "Occupation"
-    occupation_sheet = sh.worksheet(sheet_name)
+    occ_sheet_name = "Occupation"
+    occupation_sheet = sh.worksheet(occ_sheet_name)
     occupation_sheet.clear()
-    headers = [
+    occ_headers = [
         "occupation code", "occupation", "occupation link", "description", "average salary",
         "future demand", "job type", "skill level", "industry", "skills", "number of vacancies",
         "link to vacancies", "link to courses", "apprenticeships and traineeships",
         "overview : interests", "overview : considerations", "overview : day-to-day"
     ]
-    occupation_sheet.append_row(headers)
+    occupation_sheet.append_row(occ_headers)
     header_format = CellFormat(
         backgroundColor=Color(0.8, 1, 0.8),
         textFormat=TextFormat(bold=True, fontSize=12),
@@ -78,8 +79,17 @@ def set_sheets():
     try:
         progress_sheet = sh.worksheet("Progress")
     except gspread.exceptions.WorksheetNotFound:
-        progress_sheet = sh.add_worksheet("Progress")
-    return occupation_sheet, progress_sheet
+        progress_sheet = sh.add_worksheet("Progress", rows="100", cols="10")
+    
+    try:
+        data_sheet = sh.worksheet("OccupationData")
+    except gspread.exceptions.WorksheetNotFound:
+        data_sheet = sh.add_worksheet("OccupationData", rows="1000", cols="10")
+    data_sheet.clear()
+    data_headers = ["detail_url", "occupation_name", "num_vacancy", "vacancy_hyper_link", "courses_url_escaped"]
+    data_sheet.append_row(data_headers)
+    
+    return occupation_sheet, progress_sheet, data_sheet
 
 def set_driver():
     user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -121,8 +131,9 @@ def overview_to_skills(link):
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
 
+
 def main():
-    occupation_sheet, progress_sheet = set_sheets()
+    occupation_sheet, progress_sheet, data_sheet = set_sheets()
     progress = load_progress_occ(progress_sheet)
     
     if progress.get("finished", False):
@@ -131,11 +142,8 @@ def main():
 
     page_driver = set_driver()
 
-    all_occupation_data = []
-    
     if progress["phase"] == "list":
         page_num = progress.get("page_num", 1)
-
         while True:
             url = (f"https://www.yourcareer.gov.au/occupations?address%5Blocality%5D=&"
                    f"address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&"
@@ -186,28 +194,42 @@ def main():
                     occupation_name = "No occupation name given"
                     detail_url = None
 
-                occupation_data = {
-                    "detail_url": detail_url,
-                    "occupation_name": occupation_name,
-                    "num_vacancy": num_vacancy,
-                    "vacancy_hyper_link": vacancy_hyper_link,
-                    "courses_url_escaped": courses_url_escaped
-                }
-                all_occupation_data.append(occupation_data)
+                row = [detail_url, occupation_name, num_vacancy, vacancy_hyper_link, courses_url_escaped]
+                append_row_with_retry(data_sheet, row)
 
             progress["page_num"] = page_num
-            progress["all_occupation_data"] = all_occupation_data
             save_progress_occ(progress_sheet, progress)
             if not check_next_button(driver=page_driver):
                 break
             page_num += 1
-
+        
         progress["phase"] = "details"
         progress["detail_index"] = 0
         save_progress_occ(progress_sheet, progress)
-    else:
-        all_occupation_data = progress.get("all_occupation_data", [])
 
+    else:
+        records = data_sheet.get_all_records()
+        all_occupation_data = []
+        for record in records:
+            all_occupation_data.append({
+                "detail_url": record["detail_url"],
+                "occupation_name": record["occupation_name"],
+                "num_vacancy": record["num_vacancy"],
+                "vacancy_hyper_link": record["vacancy_hyper_link"],
+                "courses_url_escaped": record["courses_url_escaped"]
+            })
+    
+    if progress["phase"] == "details" and 'all_occupation_data' not in locals():
+        records = data_sheet.get_all_records()
+        all_occupation_data = []
+        for record in records:
+            all_occupation_data.append({
+                "detail_url": record["detail_url"],
+                "occupation_name": record["occupation_name"],
+                "num_vacancy": record["num_vacancy"],
+                "vacancy_hyper_link": record["vacancy_hyper_link"],
+                "courses_url_escaped": record["courses_url_escaped"]
+            })
     detail_index = progress.get("detail_index", 0)
     for i in range(detail_index, len(all_occupation_data)):
         occ_info = all_occupation_data[i]
@@ -336,7 +358,7 @@ def main():
                     skills_text = "No skills given"
             except NoSuchElementException:
                 skills_text = "Failed to load skills page"
-
+                
         occ_detail_url_escaped = occ_info['courses_url_escaped']
         courses_hyper_link = f'=HYPERLINK("{occ_detail_url_escaped}", "{occ_detail_url_escaped}")'
 
@@ -366,7 +388,7 @@ def main():
 
     progress["finished"] = True
     save_progress_occ(progress_sheet, progress)
-
+    
     page_driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
