@@ -28,6 +28,15 @@ spreadsheet = gc.open_by_url(spreadsheet_url)
 def get_worksheet(sheet_name):
     return spreadsheet.worksheet(sheet_name)
 
+def set_vacancy_sheet():
+    worksheet = get_worksheet("Vacancies")
+    worksheet.clear()
+    headers = ["occupation", "occupation link", "date added", "time scrapped", "job title",
+               "job link", "job code", "company", "salary", "address", "lat", "long",
+               "tenure", "overview", "closes", "description"]
+    worksheet.append_row(headers)
+    return worksheet
+
 def load_progress_occ():
     progress_sheet = get_worksheet("Progress")
     progress_val = progress_sheet.acell("A2").value
