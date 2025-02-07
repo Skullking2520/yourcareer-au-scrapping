@@ -147,7 +147,7 @@ def update_occupation_cell(job_code, new_occupation, new_mod_va_occupation, retr
                     updated_occ_link = f"{current_occ_link},{new_mod_va_occupation}" if current_occ_link else new_mod_va_occupation
                     va_sheet.update_cell(row_num, occ_link_index, updated_occ_link)
                     break
-                except Exception as e:
+                except Exception:
                     time.sleep(delay)
             break
 
@@ -289,7 +289,7 @@ def main():
                         )
                     )
                     company = company_elem.text
-                except (NoSuchElementException, TimeoutException):
+                except (NoSuchElementException, TimeoutException, TimeoutError):
                     company = "No company given"
     
                 if vac_element['job_code'] in seen_jobs:
