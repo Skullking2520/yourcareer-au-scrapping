@@ -42,25 +42,73 @@ def load_progress_occ():
             "phase": "list",        
             "page_num": 1,          
             "detail_index": 0,      
-            "all_occupation_data": [],  
             "finished": False      
         }
     try:
         progress = json.loads(progress_val)
-        return progress
+        minimal_progress = {
+            "phase": progress.get("phase", "list"),
+            "page_num": progress.get("page_num", 1),
+            "detail_index": progress.get("detail_index", 0),
+            "finished": progress.get("finished", False)
+        }
+        return minimal_progress
     except Exception as e:
         print("Error loading occupation progress from sheet, using default:", e)
         return {
             "phase": "list",        
             "page_num": 1,          
             "detail_index": 0,      
-            "all_occupation_data": [],  
             "finished": False      
         }
 
 def save_progress_occ(progress):
     progress_sheet = get_worksheet("Progress")
-    progress_sheet.update_acell("A2", json.dumps(progress))
+    minimal_progress = {
+        "phase": progress.get("phase", "list"),
+        "page_num": progress.get("page_num", 1),
+        "detail_index": progress.get("detail_index", 0),
+        "finished": progress.get("finished", False)
+    }
+    progress_sheet.update_acell("A2", json.dumps(minimal_progress))
+
+def save_occupation_data(data):
+    try:
+        ws = get_worksheet("OccupationData")
+        ws.clear()
+    except gspread.exceptions.WorksheetNotFound:
+        ws = spreadsheet_obj.add_worksheet("OccupationData", rows="1000", cols="20")
+    headers = ["detail_url", "occupation_name", "num_vacancy", "vacancy_hyper_link", "courses_url_escaped"]
+    ws.append_row(headers)
+    for record in data:
+        ws.append_row([
+            record.get("detail_url", ""),
+            record.get("occupation_name", ""),
+            record.get("num_vacancy", ""),
+            record.get("vacancy_hyper_link", ""),
+            record.get("courses_url_escaped", "")
+        ])
+
+def load_occupation_data():
+    try:
+        ws = get_worksheet("OccupationData")
+        all_values = ws.get_all_values()
+        if len(all_values) <= 1:
+            return []
+        data = []
+        for row in all_values[1:]:
+            record = {
+                "detail_url": row[0],
+                "occupation_name": row[1],
+                "num_vacancy": row[2],
+                "vacancy_hyper_link": row[3],
+                "courses_url_escaped": row[4]
+            }
+            data.append(record)
+        return data
+    except Exception as e:
+        print("Error loading occupation data from sheet:", e)
+        return []
 
 def set_driver():
     # set options and driver settings
@@ -203,16 +251,18 @@ def main():
                 all_occupation_data.append(occupation_data)
 
             progress["page_num"] = page_num
-            progress["all_occupation_data"] = all_occupation_data
+            
             save_progress_occ(progress)
             if not check_next_button(driver=page_driver):
                 break
             page_num += 1
+
+        save_occupation_data(all_occupation_data)
         progress["phase"] = "details"
         progress["detail_index"] = 0
         save_progress_occ(progress)
     else:
-        all_occupation_data = progress.get("all_occupation_data", [])
+        all_occupation_data = load_occupation_data()
     
     # get detail from page and add it to google dox
     detail_index = progress.get("detail_index", 0)
