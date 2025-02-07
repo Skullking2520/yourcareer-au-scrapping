@@ -4,13 +4,13 @@ import time
 import re
 from urllib.parse import urljoin
 
-from selenium import webdriver  # web scraping
+from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
-from google.oauth2.service_account import Credentials  # google doc
+from google.oauth2.service_account import Credentials
 import gspread
 from gspread_formatting import *
 
@@ -25,21 +25,20 @@ def load_progress_occ(progress_sheet):
             raise Exception("No progress value found in A1")
     except Exception:
         return {
-            "phase": "list",        # "list" 또는 "details"
-            "page_num": 1,          # 리스트 페이지 번호
-            "detail_index": 0,      # 상세 페이지 인덱스
+            "phase": "list",
+            "page_num": 1,
+            "detail_index": 0,
             "finished": False
         }
 
 def save_progress_occ(progress_sheet, progress):
-    progress_sheet.update("A1", [[json.dumps(progress)]])
-
+    progress_sheet.update(values=[[json.dumps(progress)]], range_name="A1")
 
 def set_sheets():
     key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
     if not key_content:
         raise FileNotFoundError("Service account key content not found in environment variable!")
-
+    
     key_path = "service_account.json"
     with open(key_path, "w") as f:
         f.write(key_content)
@@ -131,7 +130,6 @@ def overview_to_skills(link):
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
 
-
 def main():
     occupation_sheet, progress_sheet, data_sheet = set_sheets()
     progress = load_progress_occ(progress_sheet)
@@ -156,8 +154,8 @@ def main():
 
             occupations = page_driver.find_elements(By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")
             time.sleep(3)
+            rows_to_append = []
             for occupation in occupations:
-                # vacancy link
                 try:
                     vacancy_link = occupation.find_element(By.CSS_SELECTOR, "a[rel='nofollow']")
                     vacancy_url = vacancy_link.get_attribute("href")
@@ -166,7 +164,6 @@ def main():
                 except NoSuchElementException:
                     vacancy_hyper_link = "No link given"
 
-                # number of vacancies
                 try:
                     raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
                     match = re.search(r"^\d+", raw_num_vacancy)
@@ -177,7 +174,6 @@ def main():
                 except NoSuchElementException:
                     num_vacancy = "No number of vacancy given"
 
-                # courses link
                 courses_links = occupation.find_elements(By.CSS_SELECTOR, "a[aria-label^='Explore courses'], a[aria-label^='View course']")
                 if courses_links:
                     courses_url = courses_links[0].get_attribute("href")
@@ -185,7 +181,6 @@ def main():
                 else:
                     courses_url_escaped = "No link given"
 
-                # detail page link & occupation name
                 try:
                     detail_link = occupation.find_element(By.CSS_SELECTOR, "a[class='link mint-link link']")
                     occupation_name = detail_link.text
@@ -195,7 +190,13 @@ def main():
                     detail_url = None
 
                 row = [detail_url, occupation_name, num_vacancy, vacancy_hyper_link, courses_url_escaped]
-                append_row_with_retry(data_sheet, row)
+                rows_to_append.append(row)
+
+            if rows_to_append:
+                try:
+                    data_sheet.append_rows(rows_to_append, value_input_option="USER_ENTERED")
+                except Exception as e:
+                    print("Error appending rows:", e)
 
             progress["page_num"] = page_num
             save_progress_occ(progress_sheet, progress)
@@ -206,7 +207,6 @@ def main():
         progress["phase"] = "details"
         progress["detail_index"] = 0
         save_progress_occ(progress_sheet, progress)
-
     else:
         records = data_sheet.get_all_records()
         all_occupation_data = []
@@ -230,6 +230,7 @@ def main():
                 "vacancy_hyper_link": record["vacancy_hyper_link"],
                 "courses_url_escaped": record["courses_url_escaped"]
             })
+
     detail_index = progress.get("detail_index", 0)
     for i in range(detail_index, len(all_occupation_data)):
         occ_info = all_occupation_data[i]
@@ -260,20 +261,17 @@ def main():
             aat = "Failed to load detail page"
             print(f"Failed to find {occ_info['occupation_name']} link. Skipping...")
         else:
-            # description
             try:
                 description = page_driver.find_element(By.CSS_SELECTOR, "div[class='text-lg']").text
             except NoSuchElementException:
                 description = "No description given"
 
-            # average salary
             try:
                 average_salary = page_driver.find_element(By.CSS_SELECTOR,
                                                           "h3[identifer='Occupation_Insights_Average_Salary'] ~ p").text
             except NoSuchElementException:
                 average_salary = "No average salary given"
 
-            # future demand
             try:
                 raw_future_demand = page_driver.find_element(By.CSS_SELECTOR, "h3[identifer='Occupation_Insights_Future_Demand']")
                 li_future_demand = raw_future_demand.find_element(By.XPATH, "./ancestor::li")
@@ -281,21 +279,18 @@ def main():
             except NoSuchElementException:
                 future_demand = "No future demand given"
 
-            # job type
             try:
                 job_type = page_driver.find_element(By.CSS_SELECTOR,
                                                       "h3[identifer='Occupation_Insights_Job_Type'] ~ p").text
             except NoSuchElementException:
                 job_type = "No job type given"
 
-            # skill level
             try:
                 skill_level = page_driver.find_element(By.CSS_SELECTOR,
                                                          "h3[identifer='Occupation_Insights_Skill_Level'] ~ p").text
             except NoSuchElementException:
                 skill_level = "No skill level given"
 
-            # industry
             try:
                 raw_industry = page_driver.find_element(By.CSS_SELECTOR, "ul[class='industry-link-list']")
                 industries = raw_industry.find_elements(By.CSS_SELECTOR, "a[class='mint-link']")
@@ -304,7 +299,6 @@ def main():
             except NoSuchElementException:
                 industry = "No industry given"
 
-            # Apprenticeships and traineeships
             try:
                 raw_aat = page_driver.find_element(By.CSS_SELECTOR, "ul.list-inline")
                 li_aat = raw_aat.find_elements(By.CSS_SELECTOR, "span.mint-pill__content-label")
@@ -313,7 +307,6 @@ def main():
             except NoSuchElementException:
                 aat = "No Apprenticeships and traineeships given"
 
-            # interests
             try:
                 interests = page_driver.find_element(By.CSS_SELECTOR, "h3[identifier='Interests_Stories_Heading'] ~ ul")
                 overview_interests = interests.find_elements(By.CSS_SELECTOR, "span[class='mint-pill__content-label']")
@@ -322,7 +315,6 @@ def main():
             except NoSuchElementException:
                 overview_interests_text = "No interests given"
 
-            # considerations
             try:
                 considerations = page_driver.find_element(By.CSS_SELECTOR,
                                                             "h3[identifier='Considerations_Stories_Heading'] ~ ul")
@@ -333,7 +325,6 @@ def main():
             except NoSuchElementException:
                 overview_considerations_text = "No considerations given"
 
-            # day-to-day overview
             try:
                 dtds = page_driver.find_element(By.CSS_SELECTOR, "h3[identifier='Day_to_day_Stories_Heading'] ~ ul")
                 dtd_elements = dtds.find_elements(By.TAG_NAME, "li")
@@ -342,7 +333,6 @@ def main():
             except NoSuchElementException:
                 dtd = "No day-to-day given"
 
-            # skills
             try:
                 current_url = page_driver.current_url
                 skills_url = overview_to_skills(current_url)
