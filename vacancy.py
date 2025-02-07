@@ -294,6 +294,8 @@ def main():
     
                 if vac_element['job_code'] in seen_jobs:
                     print(f"Duplicate found, skipping: {company}, {vac_element['job_title']}")
+                    detail_idx += 1
+                    progress["detail_index"] = detail_idx
                     continue
     
                 try:
