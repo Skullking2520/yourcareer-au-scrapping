@@ -60,7 +60,7 @@ def load_progress_occ():
 
 def save_progress_occ(progress):
     progress_sheet = get_worksheet("Progress")
-     progress_sheet.update_acell("A2", json.dumps(progress))
+    progress_sheet.update_acell("A2", json.dumps(progress))
 
 def set_driver():
     # set options and driver settings
