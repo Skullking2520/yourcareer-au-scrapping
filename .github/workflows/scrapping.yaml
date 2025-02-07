@@ -29,14 +29,9 @@ jobs:
 
     - name: Install Chromedriver
       run: |
-        set -ex
         sudo apt-get install -y unzip jq
-    
-        CHROME_JSON=$(curl -sS https://googlechromelabs.github.io/chrome-for-testing/latest-versions-per-os.json)
-        CHROMEDRIVER_URL=$(echo "$CHROME_JSON" | jq -r '.linux.chromedriver.download_url')
-        echo "Downloading Chromedriver from ${CHROMEDRIVER_URL}"
-    
-        wget "${CHROMEDRIVER_URL}" -O chromedriver.zip
+        URL=$(curl -sS https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json | jq -r '.channels.Stable.downloads.chromedriver.url')
+        wget "$URL" -O chromedriver.zip
         unzip chromedriver.zip
         sudo mv chromedriver-linux64/chromedriver /usr/local/bin/chromedriver
         sudo chmod +x /usr/local/bin/chromedriver
@@ -52,6 +47,12 @@ jobs:
       run: |
         python main.py
 
+    - name: Upload occupation progress artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: occupation-progress
+        path: occupation_progress.txt
+        
   run-vacancies-scraping:
     runs-on: [self-hosted, runner]
     timeout-minutes: 0
@@ -81,3 +82,9 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python vacancy.py
+        
+    - name: Upload vacancy progress artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: vacancy-progress
+        path: progress.txt
