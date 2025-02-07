@@ -237,6 +237,7 @@ def main():
     outer = progress.get("outer", 0)
 
     all_vacancy_data = []
+    page_num = progress.get("page_num", 1)
     
     while outer < len(url_data_list):
         phase = progress.get("phase", "vacancy_extraction")
@@ -323,7 +324,7 @@ def main():
                     break
                 page_num += 1
                 progress["page_num"] = page_num
-                save_progress(progress
+                save_progress(progress)
             
             save_vacancy_data(all_vacancy_data)
             progress["phase"] = "detail_extraction"
@@ -337,7 +338,7 @@ def main():
         seen_jobs = set()
 
         for i in range(detail_index, len(all_vacancy_data)):
-            vac_element = all_vacancy_data[detail_idx]
+            vac_element = all_vacancy_data[i]
             # open detail page
             driver.get(vac_element["job_link"])
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
