@@ -174,7 +174,7 @@ def load_progress():
 
 def save_progress(progress):
     progress_sheet = get_worksheet("Progress")
-    progress_sheet.update("A1", json.dumps(progress))
+    progress_sheet.update_acell("A1", json.dumps(progress))
 
 def main():
     init = set_vacancy_sheet()
