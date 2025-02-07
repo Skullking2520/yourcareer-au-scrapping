@@ -12,8 +12,8 @@ import re
 import gspread
 import datetime
 import json
+from gspread_formatting import CellFormat, Color, TextFormat, format_cell_range, set_column_width
 
-# Set up service account credentials
 key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
 if not key_content:
     raise FileNotFoundError("Service account key content not found in environment variable!")
@@ -178,7 +178,7 @@ def main():
     
     if is_first_execution(progress_sheet):
         set_occ_sheet()
-    # Clear and reinitialize OccupationData sheet at the start of the list phase
+    # Reinitialize OccupationData sheet for each new list extraction (like all_occupation_data reset)
     set_occ_data_sheet()
     
     if progress.get("finished", False):
@@ -334,7 +334,7 @@ def main():
                 aat = "No Apprenticeships and traineeships given"
     
             try:
-                interests = page_driver.find_element(By.CSS_SELECTOR, "h3[identifier='Interests_Stories_Heading'] ~ ul")
+                interests = page_driver.find_element(By.CSS_SELECTOR, "h3[identifer='Interests_Stories_Heading'] ~ ul")
                 overview_interests = interests.find_elements(By.CSS_SELECTOR, "span[class='mint-pill__content-label']")
                 interests_list = [intr.text for intr in overview_interests]
                 overview_interests_text = ", \n".join(interests_list)
@@ -343,7 +343,7 @@ def main():
     
             try:
                 considerations = page_driver.find_element(By.CSS_SELECTOR,
-                                                            "h3[identifier='Considerations_Stories_Heading'] ~ ul")
+                                                            "h3[identifer='Considerations_Stories_Heading'] ~ ul")
                 overview_considerations = considerations.find_elements(By.CSS_SELECTOR, "span[class='mint-pill__content-label']")
                 considerations_list = [cons.text for cons in overview_considerations]
                 overview_considerations_text = ", \n".join(considerations_list)
@@ -351,7 +351,7 @@ def main():
                 overview_considerations_text = "No considerations given"
     
             try:
-                dtds = page_driver.find_element(By.CSS_SELECTOR, "h3[identifier='Day_to_day_Stories_Heading'] ~ ul")
+                dtds = page_driver.find_element(By.CSS_SELECTOR, "h3[identifer='Day_to_day_Stories_Heading'] ~ ul")
                 dtd_elements = dtds.find_elements(By.TAG_NAME, "li")
                 dtd_list = [f"'{d.text}'" for d in dtd_elements]
                 dtd = ",\n".join(dtd_list)
@@ -364,7 +364,8 @@ def main():
                 page_driver.get(skills_url)
                 time.sleep(5)
                 try:
-                    skills = page_driver.find_element(By.CSS_SELECTOR, "p[identifier='Skills_Top_Skills_Requested'] ~ ul")
+                    skills = page_driver.find_element(By.CSS_SELECTOR,
+                                                        "p[identifer='Skills_Top_Skills_Requested'] ~ ul")
                     skills_elements = skills.find_elements(By.CSS_SELECTOR, "span[class='mint-pill__content-label']")
                     skills_list = [se.get_attribute("textContent") for se in skills_elements]
                     skills_text = ", ".join(skills_list)
@@ -372,7 +373,7 @@ def main():
                     skills_text = "No skills given"
             except NoSuchElementException:
                 skills_text = "Failed to load skills page"
-    
+                
         occ_detail_url_escaped = occ_info['courses_url_escaped']
         courses_hyper_link = f'=HYPERLINK("{occ_detail_url_escaped}", "{occ_detail_url_escaped}")'
     
