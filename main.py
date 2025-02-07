@@ -10,6 +10,27 @@ import time
 import re
 import gspread
 import os
+import json
+
+PROGRESS_FILE_OCC = "occupation_progress.txt"
+
+def load_progress_occ():
+    try:
+        with open(PROGRESS_FILE_OCC, "r") as f:
+            progress = json.load(f)
+            return progress
+    except Exception:
+        return {
+            "phase": "list",        
+            "page_num": 1,          
+            "detail_index": 0,      
+            "all_occupation_data": [],  
+            "finished": False      
+        }
+
+def save_progress_occ(progress):
+    with open(PROGRESS_FILE_OCC, "w") as f:
+        json.dump(progress, f)
 
 def set_driver():
     # set options and driver settings
@@ -92,81 +113,99 @@ def overview_to_skills(link):
 
 def main():
     # main scrapping function
+
+    progress = load_progress_occ()
+    if progress.get("finished", False):
+        print("Process already finished.")
+        return
+    
     page_driver = set_driver()
     sheet = set_sheet()
 
     all_occupation_data = []
 
-    page_num = 1
+    if progress["phase"] == "list":
+        page_num = progress.get("page_num", 1)
 
-    while True:
-        # get occupation detail in base page
-        url = f"https://www.yourcareer.gov.au/occupations?address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25&pageNumber={page_num}"
-        page_driver.get(url)
-        page_driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(5)
-        print(f"current page number: {page_num}")
-
-        occupations = page_driver.find_elements(By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")
-        time.sleep(3)
-        for occupation in occupations:
-
-            # find link to vacancies
-            try:
-                vacancy_link = occupation.find_element(By.CSS_SELECTOR, "a[rel='nofollow']")
-                vacancy_url = vacancy_link.get_attribute("href")
-                vacancy_url_escaped = vacancy_url.replace('"', '\\"')
-                vacancy_hyper_link = f'=HYPERLINK("{vacancy_url_escaped}", "{vacancy_url_escaped}")'
-            except NoSuchElementException:
-                vacancy_hyper_link = "No link given"
-
-            # find number of vacancies
-            try:
-                raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
-                match = re.search(r"^\d+", raw_num_vacancy)
-                if match:
-                    num_vacancy = match.group()
-                else:
+        while True:
+            # get occupation detail in base page
+            url = f"https://www.yourcareer.gov.au/occupations?address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25&pageNumber={page_num}"
+            page_driver.get(url)
+            page_driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            time.sleep(5)
+            print(f"current page number: {page_num}")
+    
+            occupations = page_driver.find_elements(By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")
+            time.sleep(3)
+            for occupation in occupations:
+    
+                # find link to vacancies
+                try:
+                    vacancy_link = occupation.find_element(By.CSS_SELECTOR, "a[rel='nofollow']")
+                    vacancy_url = vacancy_link.get_attribute("href")
+                    vacancy_url_escaped = vacancy_url.replace('"', '\\"')
+                    vacancy_hyper_link = f'=HYPERLINK("{vacancy_url_escaped}", "{vacancy_url_escaped}")'
+                except NoSuchElementException:
+                    vacancy_hyper_link = "No link given"
+    
+                # find number of vacancies
+                try:
+                    raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
+                    match = re.search(r"^\d+", raw_num_vacancy)
+                    if match:
+                        num_vacancy = match.group()
+                    else:
+                        num_vacancy = "No number of vacancy given"
+                except NoSuchElementException:
                     num_vacancy = "No number of vacancy given"
-            except NoSuchElementException:
-                num_vacancy = "No number of vacancy given"
+    
+                # find link to courses
+                courses_links = occupation.find_elements(By.CSS_SELECTOR, "a[aria-label^='Explore courses'], a[aria-label^='View course']")
+                if courses_links:
+                    courses_url = courses_links[0].get_attribute("href")
+                    courses_url_escaped = courses_url.replace('"', '\\"')
+                else:
+                    courses_url_escaped = "No link given"
+    
+                # move to detailed page
+                try:
+                    detail_link = occupation.find_element(By.CSS_SELECTOR, "a[class='link mint-link link']")
+    
+                    # find occupation name
+                    occupation_name = detail_link.text
+    
+                    # find detail page url
+                    detail_url = detail_link.get_attribute("href")
+    
+                except NoSuchElementException:
+                    occupation_name = "No occupation name given"
+                    detail_url = None
+    
+                occupation_data = {
+                    "detail_url": detail_url,
+                    "occupation_name": occupation_name,
+                    "num_vacancy": num_vacancy,
+                    "vacancy_hyper_link": vacancy_hyper_link,
+                    "courses_url_escaped": courses_url_escaped
+                }
+                all_occupation_data.append(occupation_data)
 
-            # find link to courses
-            courses_links = occupation.find_elements(By.CSS_SELECTOR, "a[aria-label^='Explore courses'], a[aria-label^='View course']")
-            if courses_links:
-                courses_url = courses_links[0].get_attribute("href")
-                courses_url_escaped = courses_url.replace('"', '\\"')
-            else:
-                courses_url_escaped = "No link given"
-
-            # move to detailed page
-            try:
-                detail_link = occupation.find_element(By.CSS_SELECTOR, "a[class='link mint-link link']")
-
-                # find occupation name
-                occupation_name = detail_link.text
-
-                # find detail page url
-                detail_url = detail_link.get_attribute("href")
-
-            except NoSuchElementException:
-                occupation_name = "No occupation name given"
-                detail_url = None
-
-            occupation_data = {
-                "detail_url": detail_url,
-                "occupation_name": occupation_name,
-                "num_vacancy": num_vacancy,
-                "vacancy_hyper_link": vacancy_hyper_link,
-                "courses_url_escaped": courses_url_escaped
-            }
-            all_occupation_data.append(occupation_data)
-        if not check_next_button(driver=page_driver):
-            break
-        page_num += 1
-
+            progress["page_num"] = page_num
+            progress["all_occupation_data"] = all_occupation_data
+            save_progress_occ(progress)
+            if not check_next_button(driver=page_driver):
+                break
+            page_num += 1
+        progress["phase"] = "details"
+        progress["detail_index"] = 0
+        save_progress_occ(progress)
+    else:
+        all_occupation_data = progress.get("all_occupation_data", [])
+    
     # get detail from page and add it to google dox
-    for occ_info in all_occupation_data:
+    detail_index = progress.get("detail_index", 0)
+    for i in range(detail_index, len(all_occupation_data)):
+        occ_info = all_occupation_data[i]
 
         # open detail page
         page_driver.get(occ_info["detail_url"])
@@ -176,8 +215,9 @@ def main():
         print(f"current page: {occ_info['occupation_name']}")
         codes = find_occupation_code(current_url)
         occupation_code = codes[0] if codes else "No code found"
+        occ_detail_url = occ_info['detail_url']
 
-        occupation_link = f'=HYPERLINK("{occ_info['detail_url']}", "{occ_info['detail_url']}")'
+        occupation_link = f'=HYPERLINK("{occ_detail_url}", "{occ_detail_url}")'
 
         if occ_info["detail_url"] is None:
             description = "Failed to find description"
@@ -301,8 +341,9 @@ def main():
                     skills_text = "No skills given"
             except NoSuchElementException:
                 skills_text = "Failed to load skills page"
-
-        courses_hyper_link = f'=HYPERLINK("{occ_info['courses_url_escaped']}", "{occ_info['courses_url_escaped']}")'
+                
+        occ_detail_url_escaped = occ_info['courses_url_escaped']
+        courses_hyper_link = f'=HYPERLINK("{occ_detail_url_escaped}", "{occ_detail_url_escaped}")'
 
         occupation_detail = [occupation_code,
                              occ_info["occupation_name"],
@@ -323,7 +364,12 @@ def main():
                              dtd]
         append_row_with_retry(sheet, occupation_detail)
         time.sleep(3)
+        progress["detail_index"] = i + 1
+        save_progress_occ(progress)
 
+    progress["finished"] = True
+    save_progress_occ(progress)
+    
     page_driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
