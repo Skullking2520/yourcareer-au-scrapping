@@ -47,6 +47,13 @@ jobs:
       run: |
         python main.py
 
+    - name: Debug:Show occupation_progress.txt contents
+      if: always()
+      run: |
+        echo "----- occupation_progress.txt -----"
+        cat occupation_progress.txt || echo "File not found or empty."
+        echo "-----------------------------------------"
+
     - name: Upload occupation progress artifact
       if: always()
       uses: actions/upload-artifact@v4
