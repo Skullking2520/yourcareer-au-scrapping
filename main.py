@@ -12,14 +12,44 @@ import gspread
 import os
 import json
 
-PROGRESS_FILE_OCC = "occupation_progress.txt"
+key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
+if not key_content:
+    raise FileNotFoundError("Service account key content not found in environment variable!")
+
+key_path = "service_account.json"
+with open(key_path, "w") as f:
+    f.write(key_content)
+
+scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
+gc = gspread.authorize(credentials)
+spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
+sh = gc.open_by_url(spreadsheet_url)
+
+spreadsheet_obj = sh
+
+def get_worksheet(sheet_name):
+    return spreadsheet_obj.worksheet(sheet_name)
 
 def load_progress_occ():
+    progress_sheet = get_worksheet("Progress")
+    progress_val = progress_sheet.acell("A2").value
+    if not progress_val:
+        return {
+            "phase": "list",        
+            "page_num": 1,          
+            "detail_index": 0,      
+            "all_occupation_data": [],  
+            "finished": False      
+        }
     try:
-        with open(PROGRESS_FILE_OCC, "r") as f:
-            progress = json.load(f)
-            return progress
-    except Exception:
+        progress = json.loads(progress_val)
+        return progress
+    except Exception as e:
+        print("Error loading occupation progress from sheet, using default:", e)
         return {
             "phase": "list",        
             "page_num": 1,          
@@ -29,8 +59,8 @@ def load_progress_occ():
         }
 
 def save_progress_occ(progress):
-    with open(PROGRESS_FILE_OCC, "w") as f:
-        json.dump(progress, f)
+    progress_sheet = get_worksheet("Progress")
+    progress_sheet.update("A2", json.dumps(progress))
 
 def set_driver():
     # set options and driver settings
@@ -52,7 +82,7 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             return
         except gspread.exceptions.APIError as e:
             if "503" in str(e) or "500" in str(e):
-                print(f"Error 503 occurred. Retry after {delay}seconds ({attempt+1}/{retries})")
+                print(f"Error 503 occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
             else:
@@ -60,32 +90,17 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
 
 def set_sheet():
     # This is for GitHub action
-    key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
-    if not key_content:
-        raise FileNotFoundError("Service account key content not found in environment variable!")
-
-    key_path = "service_account.json"
-    with open(key_path, "w") as f:
-        f.write(key_content)
-    
-    scopes = [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive'
-    ]
-    credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
-    gc = gspread.authorize(credentials)
-    spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
-    sh = gc.open_by_url(spreadsheet_url)
-
     sheet_name = "Occupation"
     worksheet = sh.worksheet(sheet_name)
     worksheet.clear()
     headers = ["occupation code", "occupation", "occupation link", "description", "average salary", "future demand", "job type",
                "skill level", "industry", "skills", "number of vacancies",
                "link to vacancies", "link to courses", "apprenticeships and traineeships",
-         "overview : interests", "overview : considerations", "overview : day-to-day"]
+               "overview : interests", "overview : considerations", "overview : day-to-day"]
     worksheet.append_row(headers)
-    header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),textFormat=TextFormat(bold=True, fontSize=12),horizontalAlignment='CENTER')
+    header_format = CellFormat(backgroundColor=Color(0.8, 1, 0.8),
+                               textFormat=TextFormat(bold=True, fontSize=12),
+                               horizontalAlignment='CENTER')
     format_cell_range(worksheet, 'A1:Q1', header_format)
     for col in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'K', 'L', 'M', 'H']:
         set_column_width(worksheet, col, 150)
@@ -96,21 +111,18 @@ def set_sheet():
     return worksheet
 
 def check_next_button(driver):
-    # check if next button is there
     next_button = driver.find_elements(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
     return bool(next_button)
 
 def find_occupation_code(link):
-    # find occupation code from url
     code = r"/occupations/(\d+)/"
     found = re.findall(code, link)
     return found
 
 def overview_to_skills(link):
-    # change overview tab url to skills tab url
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
-
+    
 def main():
     # main scrapping function
 
