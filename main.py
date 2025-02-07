@@ -14,6 +14,23 @@ from google.oauth2.service_account import Credentials
 import gspread
 from gspread_formatting import *
 
+key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
+if not key_content:
+    raise FileNotFoundError("Service account key content not found in environment variable!")
+
+key_path = "service_account.json"
+with open(key_path, "w") as f:
+    f.write(key_content)
+
+scopes = [
+    'https://www.googleapis.com/auth/spreadsheets',
+    'https://www.googleapis.com/auth/drive'
+]
+spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
+credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
+gc = gspread.authorize(credentials)
+sh = gc.open_by_url(spreadsheet_url)
+
 def load_progress_occ(progress_sheet):
     try:
         progress_json = progress_sheet.acell("A1").value
@@ -34,26 +51,8 @@ def load_progress_occ(progress_sheet):
 def save_progress_occ(progress_sheet, progress):
     progress_sheet.update(values=[[json.dumps(progress)]], range_name="A1")
 
-def set_sheets():
-    key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
-    if not key_content:
-        raise FileNotFoundError("Service account key content not found in environment variable!")
-    
-    key_path = "service_account.json"
-    with open(key_path, "w") as f:
-        f.write(key_content)
-    
-    scopes = [
-        'https://www.googleapis.com/auth/spreadsheets',
-        'https://www.googleapis.com/auth/drive'
-    ]
-    credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
-    gc = gspread.authorize(credentials)
-    spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
-    sh = gc.open_by_url(spreadsheet_url)
-
-    occ_sheet_name = "Occupation"
-    occupation_sheet = sh.worksheet(occ_sheet_name)
+def set_occ_sheet():
+    occupation_sheet = sh.worksheet("Occupation")
     occupation_sheet.clear()
     occ_headers = [
         "occupation code", "occupation", "occupation link", "description", "average salary",
@@ -75,18 +74,27 @@ def set_sheets():
     for col in ['P']:
         set_column_width(occupation_sheet, col, 300)
 
+def set_occ_data_sheet():
+    data_sheet = sh.worksheet("OccupationData")
+    data_sheet.clear()
+    data_headers = ["detail_url", "occupation_name", "num_vacancy", "vacancy_hyper_link", "courses_url_escaped"]
+    data_sheet.append_row(data_headers)
+
+def set_sheets():
+    try:
+        occupation_sheet = sh.worksheet("Occupation")
+    except gspread.exceptions.WorksheetNotFound:
+        occupation_sheet = sh.add_worksheet("Occupation")
+    
     try:
         progress_sheet = sh.worksheet("Progress")
     except gspread.exceptions.WorksheetNotFound:
-        progress_sheet = sh.add_worksheet("Progress", rows="100", cols="10")
+        progress_sheet = sh.add_worksheet("Progress")
     
     try:
         data_sheet = sh.worksheet("OccupationData")
     except gspread.exceptions.WorksheetNotFound:
-        data_sheet = sh.add_worksheet("OccupationData", rows="1000", cols="10")
-    data_sheet.clear()
-    data_headers = ["detail_url", "occupation_name", "num_vacancy", "vacancy_hyper_link", "courses_url_escaped"]
-    data_sheet.append_row(data_headers)
+        data_sheet = sh.add_worksheet("OccupationData")
     
     return occupation_sheet, progress_sheet, data_sheet
 
@@ -130,9 +138,23 @@ def overview_to_skills(link):
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
 
+def is_first_execution(progress_sheet):
+    progress_value = progress_sheet.acell("A1").value
+    return not progress_value or progress_value.strip() == ""
+
+def is_occ_data_empty(occ_data_sheet):
+    all_values = occ_data_sheet.get_all_values()
+    return len(all_values) <= 1
+
 def main():
     occupation_sheet, progress_sheet, data_sheet = set_sheets()
     progress = load_progress_occ(progress_sheet)
+
+    if is_first_execution(progress_sheet):
+        occ_sheet = set_occ_sheet()
+    
+    if is_occ_data_empty(data_sheet):
+        data_sheet = set_occ_data_sheet()
     
     if progress.get("finished", False):
         print("Process already finished.")
