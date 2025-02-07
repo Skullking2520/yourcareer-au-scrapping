@@ -162,16 +162,19 @@ def remove_hyperlink(cell_value):
     return cell_value
 
 def load_progress():
+    progress_sheet = get_worksheet("Progress")
+    progress_val = progress_sheet.acell("A1").value
+    if not progress_val:
+        return {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
     try:
-        with open(PROGRESS_FILE, "r") as f:
-            progress = json.load(f)
-            return progress
+        progress = json.loads(progress_val)
+        return progress
     except Exception:
         return {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
 
 def save_progress(progress):
-    with open(PROGRESS_FILE, "w") as f:
-        json.dump(progress, f)
+    progress_sheet = get_worksheet("Progress")
+    progress_sheet.update("A1", json.dumps(progress))
 
 def main():
     init = set_vacancy_sheet()
