@@ -46,20 +46,6 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python main.py
-
-    - name: Debug:Show occupation_progress.txt contents
-      if: always()
-      run: |
-        echo "----- occupation_progress.txt -----"
-        cat occupation_progress.txt || echo "File not found or empty."
-        echo "-----------------------------------------"
-
-    - name: Upload occupation progress artifact
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: occupation-progress
-        path: occupation_progress.txt
         
   run-vacancies-scraping:
     runs-on: [self-hosted, runner]
@@ -90,10 +76,3 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python vacancy.py
-        
-    - name: Upload vacancy progress artifact
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: vacancy-progress
-        path: progress.txt
