@@ -32,7 +32,7 @@ def load_progress_occ(progress_sheet):
         }
 
 def save_progress_occ(progress_sheet, progress):
-    progress_sheet.update("A1", json.dumps(progress))
+    progress_sheet.update_cell(1, 1, json.dumps(progress))
 
 def set_sheets():
     key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
