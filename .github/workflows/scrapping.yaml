@@ -48,6 +48,7 @@ jobs:
         python main.py
 
     - name: Upload occupation progress artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: occupation-progress
@@ -84,6 +85,7 @@ jobs:
         python vacancy.py
         
     - name: Upload vacancy progress artifact
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: vacancy-progress
