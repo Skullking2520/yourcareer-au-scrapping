@@ -29,8 +29,6 @@ spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTN
 credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
 gc = gspread.authorize(credentials)
 spreadsheet = gc.open_by_url(spreadsheet_url)
-PROGRESS_FILE = "progress.txt"
-# {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0} for reset
 
 def set_driver():
     # set options and driver settings
@@ -168,13 +166,25 @@ def load_progress():
         return {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
     try:
         progress = json.loads(progress_val)
-        return progress
+        minimal_progress = {
+            "outer": progress.get("outer", 0),
+            "phase": progress.get("phase", "vacancy_extraction"),
+            "vacancy_index": progress.get("vacancy_index", 0),
+            "detail_index": progress.get("detail_index", 0)
+        }
+        return minimal_progress
     except Exception:
         return {"outer": 0, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
 
 def save_progress(progress):
     progress_sheet = get_worksheet("Progress")
-    progress_sheet.update_acell("A1", json.dumps(progress))
+    minimal_progress = {
+        "outer": progress.get("outer", 0),
+        "phase": progress.get("phase", "vacancy_extraction"),
+        "vacancy_index": progress.get("vacancy_index", 0),
+        "detail_index": progress.get("detail_index", 0)
+    }
+    progress_sheet.update_acell("A1", json.dumps(minimal_progress))
 
 def main():
     init = set_vacancy_sheet()
