@@ -203,82 +203,81 @@ def scrapping(driver):
         vac_index = 0 # reset VacIndex for this OccIndex
         set_vacancy_data_sheet()
 
-        while True:
+        try:
+            vacancies = wait.until(EC.presence_of_all_elements_located(
+                (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
+        except TimeoutException:
+            print(f"Vacancy elements for page {url_num} did not load in time.")
+            break
+        except Exception as e:
+            print(f"An error occurred while waiting for page load: {e}")
+            break
+
+        vac_index = 0
+
+        while vac_index < len(vacancies):
+            # find job code, update occupation index
+            vacancy = vacancies[vac_index]
+            # find job title
             try:
-                vacancies = wait.until(EC.presence_of_all_elements_located(
-                    (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
-            except TimeoutException:
-                print(f"Vacancy elements for page {url_num} did not load in time.")
-                break
-            except Exception as e:
-                print(f"An error occurred while waiting for page load: {e}")
-                break
-
-            vac_index = 0
-
-            while vac_index < len(vacancies):
-                # find job code, update occupation index
-                vacancy = vacancies[vac_index]
-                # find job title
-                try:
-                    base_url = "https://www.workforceaustralia.gov.au"
-                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
-                    job_title = job_hyper.text
-                    job_href = job_hyper.get_attribute("href")
-                    job_link = urljoin(base_url, job_href)
-                    job_code = job_href.split('/')[-1]
-                except NoSuchElementException:
-                    job_title = "No job title given"
-                    job_link = "No job link given"
-                    job_code = "No job code given"
-
-                try:
-                    raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
-                    match = re.search(r'\d+', raw_date_added_dif)
-                    if match:
-                        date_added_dif = int(match.group())
-                    else:
-                        date_added_dif = 1
-                    today = datetime.date.today()
-                    date_added = today - datetime.timedelta(days=date_added_dif)
-                except NoSuchElementException:
-                    date_added = "No date added given"
-
-                time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
-                try:
-                    overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
-                except NoSuchElementException:
-                    overview = "No overview given"
-
-                vacancy_data = {
-                    "job_title": job_title,
-                    "job_link": job_link,
-                    "job_code": job_code,
-                    "date_added": str(date_added),
-                    "time_scrapped": str(time_scrapped),
-                    "overview": overview
-                }
-                vacancy_row = dict_to_row(vacancy_data)
-
-                append_row_with_retry(data_sheet, vacancy_row)
-                time.sleep(3)
-                vac_index += 1
+                base_url = "https://www.workforceaustralia.gov.au"
+                job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
+                job_title = job_hyper.text
+                job_href = job_hyper.get_attribute("href")
+                job_link = urljoin(base_url, job_href)
+                job_code = job_href.split('/')[-1]
+            except NoSuchElementException:
+                job_title = "No job title given"
+                job_link = "No job link given"
+                job_code = "No job code given"
 
             try:
-                next_button = wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
-                driver.execute_script("arguments[0].click();", next_button)
-                wait_for_page_load(driver)
-                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
-                progress_manager.save_progress(progress)
-            except (NoSuchElementException, TimeoutException):
-                progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
-                progress_manager.save_progress(progress)
-                break
-            except Exception as e:
-                print(f"An error occurred while finding next button: {e}")
-                break
+                raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
+                match = re.search(r'\d+', raw_date_added_dif)
+                if match:
+                    date_added_dif = int(match.group())
+                else:
+                    date_added_dif = 1
+                today = datetime.date.today()
+                date_added = today - datetime.timedelta(days=date_added_dif)
+            except NoSuchElementException:
+                date_added = "No date added given"
+
+            time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+            try:
+                overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
+            except NoSuchElementException:
+                overview = "No overview given"
+
+            vacancy_data = {
+                "job_title": job_title,
+                "job_link": job_link,
+                "job_code": job_code,
+                "date_added": str(date_added),
+                "time_scrapped": str(time_scrapped),
+                "overview": overview
+            }
+            vacancy_row = dict_to_row(vacancy_data)
+
+            append_row_with_retry(data_sheet, vacancy_row)
+            time.sleep(3)
+            vac_index += 1
+
+        try:
+            next_button = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
+            driver.execute_script("arguments[0].click();", next_button)
+            wait_for_page_load(driver)
+            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
+            progress_manager.save_progress(progress)
+        except (NoSuchElementException, TimeoutException):
+            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
+            progress_manager.save_progress(progress)
+            break
+        except Exception as e:
+            print(f"An error occurred while finding next button: {e}")
+            break
 
 def detail(driver):
     va_sheet = get_worksheet("Vacancies")

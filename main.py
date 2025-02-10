@@ -221,88 +221,87 @@ def scrapping(driver):
 
         occ_index = 0  # reset OccIndex for this url
         set_occupation_data_sheet()
-        while True:
+        try:
+            occupations = wait.until(EC.presence_of_all_elements_located(
+                (By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")))
+        except TimeoutException:
+            print(f"Vacancy elements for page {url_num} did not load in time.")
+            break
+        except Exception as e:
+            print(f"An error occurred while waiting for page load: {e}")
+            break
+
+        while occ_index < len(occupations):
+            occupation = occupations[occ_index]
+
+            # find link to vacancies
             try:
-                occupations = wait.until(EC.presence_of_all_elements_located(
-                    (By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")))
-            except TimeoutException:
-                print(f"Vacancy elements for page {url_num} did not load in time.")
-                break
-            except Exception as e:
-                print(f"An error occurred while waiting for page load: {e}")
-                break
+                vacancy_link = occupation.find_element(By.CSS_SELECTOR, "a[rel='nofollow']")
+                vacancy_url = vacancy_link.get_attribute("href")
+                vacancy_url_escaped = vacancy_url.replace('"', '\\"')
+                vacancy_hyper_link = f'=HYPERLINK("{vacancy_url_escaped}", "{vacancy_url_escaped}")'
+            except NoSuchElementException:
+                vacancy_hyper_link = "No link given"
 
-            while occ_index < len(occupations):
-                occupation = occupations[occ_index]
-
-                # find link to vacancies
-                try:
-                    vacancy_link = occupation.find_element(By.CSS_SELECTOR, "a[rel='nofollow']")
-                    vacancy_url = vacancy_link.get_attribute("href")
-                    vacancy_url_escaped = vacancy_url.replace('"', '\\"')
-                    vacancy_hyper_link = f'=HYPERLINK("{vacancy_url_escaped}", "{vacancy_url_escaped}")'
-                except NoSuchElementException:
-                    vacancy_hyper_link = "No link given"
-
-                try:
-                    raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
-                    match = re.search(r"^\d+", raw_num_vacancy)
-                    if match:
-                        num_vacancy = match.group()
-                    else:
-                        num_vacancy = "No number of vacancy given"
-                except NoSuchElementException:
-                    num_vacancy = "No number of vacancy given"
-
-                    # find link to courses
-                courses_links = occupation.find_elements(By.CSS_SELECTOR,
-                                                         "a[aria-label^='Explore courses'], a[aria-label^='View course']")
-                if courses_links:
-                    courses_url = courses_links[0].get_attribute("href")
-                    courses_url_escaped = courses_url.replace('"', '\\"')
+            try:
+                raw_num_vacancy = occupation.find_element(By.CSS_SELECTOR, "a[target='_blank']").text
+                match = re.search(r"^\d+", raw_num_vacancy)
+                if match:
+                    num_vacancy = match.group()
                 else:
-                    courses_url_escaped = "No link given"
+                    num_vacancy = "No number of vacancy given"
+            except NoSuchElementException:
+                num_vacancy = "No number of vacancy given"
 
-                # move to detailed page
-                try:
-                    detail_link = occupation.find_element(By.CSS_SELECTOR, "a[class='link mint-link link']")
+                # find link to courses
+            courses_links = occupation.find_elements(By.CSS_SELECTOR,
+                                                     "a[aria-label^='Explore courses'], a[aria-label^='View course']")
+            if courses_links:
+                courses_url = courses_links[0].get_attribute("href")
+                courses_url_escaped = courses_url.replace('"', '\\"')
+            else:
+                courses_url_escaped = "No link given"
 
-                    # find occupation name
-                    occupation_name = detail_link.text
-
-                    # find detail page url
-                    detail_url = detail_link.get_attribute("href")
-
-                except NoSuchElementException:
-                    occupation_name = "No occupation name given"
-                    detail_url = None
-
-                occupation_data = {
-                    "detail_url": detail_url,
-                    "occupation_name": occupation_name,
-                    "num_vacancy": num_vacancy,
-                    "vacancy_hyper_link": vacancy_hyper_link,
-                    "courses_url_escaped": courses_url_escaped
-                }
-                occupation_row = dict_to_row(occupation_data)
-                append_row_with_retry(data_sheet, occupation_row)
-                occ_index += 1
-
+            # move to detailed page
             try:
-                next_button = wait.until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
-                driver.execute_script("arguments[0].click();", next_button)
-                wait_for_page_load(driver)
-                url_num += 1
-                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
-                progress_manager.save_progress(progress)
-            except (NoSuchElementException, TimeoutException):
-                progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
-                progress_manager.save_progress(progress)
-                break
-            except Exception as e:
-                print(f"An error occurred while finding next button: {e}")
-                break
+                detail_link = occupation.find_element(By.CSS_SELECTOR, "a[class='link mint-link link']")
+
+                # find occupation name
+                occupation_name = detail_link.text
+
+                # find detail page url
+                detail_url = detail_link.get_attribute("href")
+
+            except NoSuchElementException:
+                occupation_name = "No occupation name given"
+                detail_url = None
+
+            occupation_data = {
+                "detail_url": detail_url,
+                "occupation_name": occupation_name,
+                "num_vacancy": num_vacancy,
+                "vacancy_hyper_link": vacancy_hyper_link,
+                "courses_url_escaped": courses_url_escaped
+            }
+            occupation_row = dict_to_row(occupation_data)
+            append_row_with_retry(data_sheet, occupation_row)
+            occ_index += 1
+
+        try:
+            next_button = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
+            driver.execute_script("arguments[0].click();", next_button)
+            wait_for_page_load(driver)
+            url_num += 1
+            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
+            progress_manager.save_progress(progress)
+        except (NoSuchElementException, TimeoutException):
+            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
+            progress_manager.save_progress(progress)
+            break
+        except Exception as e:
+            print(f"An error occurred while finding next button: {e}")
+            break
 
 def detail(driver):
     occ_sheet = get_worksheet("Occupation")
