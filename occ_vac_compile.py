@@ -249,6 +249,9 @@ def main():
                 time.sleep(3)
             except (NoSuchElementException, TimeoutException):
                 break
+            except Exception as e:
+                print(f"An error occurred while finding next button: {e}")
+                break
 
         occ_index += 1
         progress = {"finished": False, "OccIndex": occ_index}
