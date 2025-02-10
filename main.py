@@ -46,8 +46,11 @@ def set_driver():
 class ProgressManager:
     def __init__(self, progress_sheet):
         self.progress_sheet = progress_sheet
+        self._cached_progress = None
 
     def _is_first_execution(self):
+        if self._cached_progress is not None:
+            return not bool(self._cached_progress.strip())
         try:
             progress_json = self.progress_sheet.acell("A1").value
             return not bool(progress_json)
@@ -55,6 +58,7 @@ class ProgressManager:
             return True
 
     def save_progress(self, progress):
+        self._cached_progress = json.dumps(progress)
         if self._is_first_execution():
             progress = {
                 "Phase": "Scrapping",
@@ -68,6 +72,11 @@ class ProgressManager:
             print("Failed to save progress.")
 
     def load_progress(self):
+        if self._cached_progress is not None:
+            try:
+                return json.loads(self._cached_progress)
+            except Exception:
+                pass
         try:
             if self._is_first_execution():
                 progress = {
