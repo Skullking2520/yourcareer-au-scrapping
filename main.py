@@ -206,6 +206,7 @@ def scrapping(driver):
     progress_manager = ProgressManager(progress_sheet)
     progress = progress_manager.load_progress()
     url_num = progress.get("UrlNum", 1)
+    set_occupation_data_sheet()
     while True:
         occ_url = URL + str(url_num)
 
@@ -220,7 +221,6 @@ def scrapping(driver):
         wait_for_page_load(driver)
 
         occ_index = 0  # reset OccIndex for this url
-        set_occupation_data_sheet()
         try:
             occupations = wait.until(EC.presence_of_all_elements_located(
                 (By.CSS_SELECTOR, "section[class='mint-search-result-item no-description']")))
@@ -330,6 +330,10 @@ def detail(driver):
         current_url = driver.current_url
         codes = find_occupation_code(current_url)
         occupation_code = codes[0] if codes else "No code found"
+        if occupation_code in seen_jobs:
+            print(f"Duplicate found, skipping: {occupation_code}")
+            occ_index += 1
+            continue
         occupation_link = f'=HYPERLINK("{occ_detail_url}", "{occ_detail_url}")'
 
         if occ_detail_url is None:

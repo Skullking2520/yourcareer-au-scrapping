@@ -65,7 +65,7 @@ class ProgressManager:
             progress = {
                 "Phase": "Scrapping",
                 "finished": False,
-                "UrlNum": 0,
+                "UrlNum": 1,
             }
         try:
             self.progress_sheet.update("A2", json.dumps(progress))
@@ -187,6 +187,7 @@ def scrapping(driver):
     progress_manager = ProgressManager(progress_sheet)
     progress = progress_manager.load_progress()
     url_num = progress.get("UrlNum", 1)
+    set_vacancy_data_sheet()
     while True:
         va_url = URL + str(url_num)
 
@@ -201,7 +202,6 @@ def scrapping(driver):
         wait_for_page_load(driver)
 
         vac_index = 0 # reset VacIndex for this OccIndex
-        set_vacancy_data_sheet()
 
         try:
             vacancies = wait.until(EC.presence_of_all_elements_located(
@@ -269,6 +269,7 @@ def scrapping(driver):
                 EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
             driver.execute_script("arguments[0].click();", next_button)
             wait_for_page_load(driver)
+            url_num += 1
             progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
             progress_manager.save_progress(progress)
         except (NoSuchElementException, TimeoutException):
