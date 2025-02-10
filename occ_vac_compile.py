@@ -135,25 +135,38 @@ def update_occ_row(va_sheet, pending_updates):
         except Exception:
             print("Cache update error")
 
+_progress_cache_occ = None
+
 def is_first_execution(progress_sheet):
+    global _progress_cache_occ
+    if _progress_cache_occ is not None:
+        return not bool(_progress_cache_occ.strip())
     progress_value = progress_sheet.acell("A3").value
-    return not progress_value or progress_value.strip() == ""
+    _progress_cache_occ = progress_value if progress_value else ""
+    return not _progress_cache_occ.strip()
 
 def save_progress_occ(progress_sheet, progress):
+    global _progress_cache_occ
     if is_first_execution(progress_sheet):
         progress = {"finished": False , "OccIndex": 0, "VacIndex": 0}
     try:
+        _progress_cache_occ = json.dumps(progress)
         progress_sheet.update("A3", json.dumps(progress))
     except Exception:
         print("Failed to save progress.")
 
 def load_progress_occ(progress_sheet):
+    global _progress_cache_occ
     try:
+        if _progress_cache_occ is not None:
+            return json.loads(_progress_cache_occ)
         if is_first_execution(progress_sheet):
             progress = {"finished": False, "OccIndex": 0, "VacIndex": 0}
+            _progress_cache_occ = json.dumps(progress)
             return progress
         else:
             progress_json = progress_sheet.acell("A3").value
+            _progress_cache_occ = progress_json if progress_json else ""
             if progress_json:
                 progress = json.loads(progress_json)
                 return progress
