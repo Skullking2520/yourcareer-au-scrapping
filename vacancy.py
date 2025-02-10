@@ -30,6 +30,7 @@ credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
 gc = gspread.authorize(credentials)
 spreadsheet = gc.open_by_url(spreadsheet_url)
 URL = "https://www.workforceaustralia.gov.au/individuals/jobs/search?locationCodes%5B0%5D=7&pageNumber="
+BATCH_SIZE = 10
 
 def set_driver():
     # set options and driver settings
@@ -65,7 +66,6 @@ class ProgressManager:
                 "Phase": "Scrapping",
                 "finished": False,
                 "UrlNum": 0,
-                "VacIndex": 0
             }
         try:
             self.progress_sheet.update("A2", json.dumps(progress))
@@ -84,7 +84,6 @@ class ProgressManager:
                     "Phase": "Scrapping",
                     "finished": False,
                     "UrlNum": 0,
-                    "VacIndex": 0
                 }
                 return progress
             else:
@@ -201,7 +200,7 @@ def scrapping(driver):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         wait_for_page_load(driver)
 
-        vac_index = progress.get("VacIndex", 0)  # reset VacIndex for this OccIndex
+        vac_index = 0 # reset VacIndex for this OccIndex
         set_vacancy_data_sheet()
 
         while True:
@@ -214,6 +213,8 @@ def scrapping(driver):
             except Exception as e:
                 print(f"An error occurred while waiting for page load: {e}")
                 break
+
+            vac_index = 0
 
             while vac_index < len(vacancies):
                 # find job code, update occupation index
@@ -262,8 +263,6 @@ def scrapping(driver):
 
                 append_row_with_retry(data_sheet, vacancy_row)
                 time.sleep(3)
-                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "VacIndex": vac_index}
-                progress_manager.save_progress(progress)
                 vac_index += 1
 
         try:
@@ -271,10 +270,10 @@ def scrapping(driver):
                 EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
             driver.execute_script("arguments[0].click();", next_button)
             wait_for_page_load(driver)
-            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "VacIndex": 0}
+            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
             progress_manager.save_progress(progress)
         except (NoSuchElementException, TimeoutException):
-            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1, "VacIndex": 0}
+            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
             progress_manager.save_progress(progress)
             break
         except Exception as e:
@@ -290,7 +289,7 @@ def detail(driver):
     progress = progress_manager.load_progress()
     url_num = progress.get("UrlNum", 1)
 
-    vac_index = progress.get("VacIndex", 0)  # reset VacIndex for this OccIndex
+    vac_index = 0  # reset VacIndex for this OccIndex
     vacancy_data = get_vacancy_data()
     seen_jobs = set(duplicate_list() or [])
     while vac_index < len(vacancy_data):
@@ -407,10 +406,8 @@ def detail(driver):
         time.sleep(3)
         seen_jobs.add(vac_element['job_code'])
         vac_index += 1
-        progress = {"Phase": "Detail", "finished": False, "UrlNum": url_num, "VacIndex": vac_index}
-        progress_manager.save_progress(progress)
 
-    progress = {"Phase": "Scrapping", "finished": True, "UrlNum": 1, "VacIndex": 0}
+    progress = {"Phase": "Scrapping", "finished": True, "UrlNum": 1}
     progress_manager.save_progress(progress)
 
 def main():

@@ -29,6 +29,7 @@ credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
 gc = gspread.authorize(credentials)
 spreadsheet = gc.open_by_url(spreadsheet_url)
 URL = "https://www.yourcareer.gov.au/occupations?address%5Blocality%5D=&address%5Bstate%5D=VIC&address%5Bpostcode%5D=&address%5Blatitude%5D=0&address%5Blongitude%5D=0&address%5BformattedLocality%5D=Victoria%20%28VIC%29&distanceFilter=25&pageNumber="
+BATCH_SIZE = 5
 
 def set_driver():
     # set options and driver settings
@@ -63,8 +64,7 @@ class ProgressManager:
             progress = {
                 "Phase": "Scrapping",
                 "finished": False,
-                "UrlNum": 0,
-                "OccIndex": 0
+                "UrlNum": 0
             }
         try:
             self.progress_sheet.update("A1", json.dumps(progress))
@@ -82,8 +82,7 @@ class ProgressManager:
                 progress = {
                     "Phase": "Scrapping",
                     "finished": False,
-                    "UrlNum": 0,
-                    "OccIndex": 0
+                    "UrlNum": 0
                 }
                 return progress
             else:
@@ -203,10 +202,7 @@ def duplicate_list():
 def scrapping(driver):
     wait = WebDriverWait(driver, 10)
     data_sheet = get_worksheet("OccupationData")
-
     progress_sheet = get_worksheet("Progress")
-    if is_first_execution(progress_sheet):
-        set_occ_sheet()
     progress_manager = ProgressManager(progress_sheet)
     progress = progress_manager.load_progress()
     url_num = progress.get("UrlNum", 1)
@@ -223,7 +219,7 @@ def scrapping(driver):
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         wait_for_page_load(driver)
 
-        occ_index = progress.get("OccIndex", 0)  # reset OccIndex for this url
+        occ_index = 0  # reset OccIndex for this url
         set_occupation_data_sheet()
         while True:
             try:
@@ -290,8 +286,6 @@ def scrapping(driver):
                 }
                 occupation_row = dict_to_row(occupation_data)
                 append_row_with_retry(data_sheet, occupation_row)
-                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "OccIndex": occ_index}
-                progress_manager.save_progress(progress)
                 occ_index += 1
 
         try:
@@ -299,10 +293,11 @@ def scrapping(driver):
                 EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
             driver.execute_script("arguments[0].click();", next_button)
             wait_for_page_load(driver)
-            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "OccIndex": 0}
+            url_num += 1
+            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
             progress_manager.save_progress(progress)
         except (NoSuchElementException, TimeoutException):
-            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1, "OccIndex": 0}
+            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
             progress_manager.save_progress(progress)
             break
         except Exception as e:
@@ -316,9 +311,9 @@ def detail(driver):
         set_occ_sheet()
     progress_manager = ProgressManager(progress_sheet)
     progress = progress_manager.load_progress()
-    url_num = progress.get("UrlNum", 1)
+    url_num = 0
 
-    occ_index = progress.get("OccIndex", 0)  # reset OccIndex for this url
+    occ_index = 0  # reset OccIndex for this url
     occ_data = get_occupation_data()
     seen_jobs = set(duplicate_list() or [])
     while occ_index < len(occ_data):
@@ -466,6 +461,7 @@ def detail(driver):
                     skills_text = ", ".join(skills_list)
                 except TimeoutException:
                     print("Skills section did not load in time.")
+                    skills_text = "No skills given"
                 except Exception:
                     skills_text = "No skills given"
             except NoSuchElementException:
@@ -495,10 +491,8 @@ def detail(driver):
         time.sleep(3)
         seen_jobs.add(occupation_code)
         occ_index += 1
-        progress = {"Phase": "Detail", "finished": False, "UrlNum": url_num, "OccIndex": occ_index}
-        progress_manager.save_progress(progress)
 
-    progress = {"Phase": "Scrapping", "finished": True, "UrlNum": 1, "OccIndex": 0}
+    progress = {"Phase": "Scrapping", "finished": True, "UrlNum": 1}
     progress_manager.save_progress(progress)
 
 def main():

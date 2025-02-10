@@ -148,7 +148,7 @@ def is_first_execution(progress_sheet):
 def save_progress_occ(progress_sheet, progress):
     global _progress_cache_occ
     if is_first_execution(progress_sheet):
-        progress = {"finished": False , "OccIndex": 0, "VacIndex": 0}
+        progress = {"finished": False , "OccIndex": 0}
     try:
         _progress_cache_occ = json.dumps(progress)
         progress_sheet.update("A3", json.dumps(progress))
@@ -161,7 +161,7 @@ def load_progress_occ(progress_sheet):
         if _progress_cache_occ is not None:
             return json.loads(_progress_cache_occ)
         if is_first_execution(progress_sheet):
-            progress = {"finished": False, "OccIndex": 0, "VacIndex": 0}
+            progress = {"finished": False, "OccIndex": 0}
             _progress_cache_occ = json.dumps(progress)
             return progress
         else:
@@ -213,7 +213,7 @@ def main():
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
         time.sleep(3)
 
-        vac_index = progress.get("VacIndex", 0) # reset VacIndex for this OccIndex
+        vac_index = 0 # reset VacIndex for this OccIndex
         while True:
             try:
                 vacancies = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
@@ -221,6 +221,7 @@ def main():
                 print(f"Vacancy elements for occupation index({occ_index}) did not load in time.")
                 break
 
+            vac_index = 0
             while vac_index < len(vacancies):
                 # find job code, update occupation index
                 vacancy = vacancies[vac_index]
@@ -230,7 +231,6 @@ def main():
                     job_code = job_href.split('/')[-1]
                 except NoSuchElementException:
                     job_code = "No job code given"
-                    print(f"No job code for occupation: {occ_index}, vacancy: {vac_index}")
 
                 if job_code in check_list:
                     save_cache(job_code, va_occupation, job_code_cache, pending_updates, occupation_index)
@@ -239,7 +239,7 @@ def main():
 
                 vac_index += 1
 
-                progress = {"finished": False, "OccIndex": occ_index, "VacIndex": vac_index}
+                progress = {"finished": False, "OccIndex": occ_index}
                 save_progress_occ(progress_sheet, progress)
             update_occ_row(va_sheet, pending_updates)
 
@@ -247,16 +247,15 @@ def main():
                 next_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
                 driver.execute_script("arguments[0].click();", next_button)
                 time.sleep(3)
-                vac_index = 0
             except (NoSuchElementException, TimeoutException):
                 break
 
         occ_index += 1
-        progress = {"finished": False, "OccIndex": occ_index, "VacIndex": 0}
+        progress = {"finished": False, "OccIndex": occ_index}
         save_progress_occ(progress_sheet, progress)
 
     update_occ_row(va_sheet, pending_updates)
-    progress = {"finished": True, "OccIndex": occ_index, "VacIndex": 0}
+    progress = {"finished": True, "OccIndex": occ_index}
     save_progress_occ(progress_sheet, progress)
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
