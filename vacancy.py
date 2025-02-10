@@ -1,19 +1,18 @@
-from urllib.parse import urljoin
-from selenium import webdriver
+import json
+from urllib.parse import urljoin  # join url
+from requests import ReadTimeout
+from selenium import webdriver  # web scrapping
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from google.oauth2.service_account import Credentials
-from requests.exceptions import ReadTimeout
+from google.oauth2.service_account import Credentials  # google doc
 import time
 import os
 import re
 import gspread
 import datetime
-import json
 
-# Set up service account credentials
 key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
 if not key_content:
     raise FileNotFoundError("Service account key content not found in environment variable!")
@@ -26,77 +25,89 @@ scopes = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive'
 ]
-spreadsheet_url = ("https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-"
-                     "qCNXxm9m7eu0/edit?gid=0#gid=0")
+spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
 credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
 gc = gspread.authorize(credentials)
-sh = gc.open_by_url(spreadsheet_url)
-
-def load_progress_occ(progress_sheet):
-    try:
-        progress_json = progress_sheet.acell("A2").value
-        if progress_json:
-            progress = json.loads(progress_json)
-            progress.pop("all_occupation_data", None)
-            return progress
-        else:
-            raise Exception("No progress value found in A2")
-    except Exception:
-        return {
-            "phase": "vacancy_extraction",
-            "vacancy_index": 0,
-            "detail_index": 0,
-            "outer": 0,
-            "finished": False
-        }
-
-def save_progress_occ(progress_sheet, progress):
-    progress_sheet.update(values=[[json.dumps(progress)]], range_name="A2")
-
-def set_vac_data_sheet():
-    vac_data_sheet = sh.worksheet("VacancyData")
-    vac_data_sheet.clear()
-    headers = ["occupation", "occupation link", "date added", "time scrapped",
-               "job title", "job link", "job code", "company", "salary", "address",
-               "lat", "long", "tenure", "overview", "closes", "description"]
-    vac_data_sheet.append_row(headers)
-
-def set_vacancy_sheet():
-    vac_sheet = sh.worksheet("Vacancies")
-    vac_sheet.clear()
-    headers = ["occupation", "occupation link", "date added", "time scrapped",
-               "job title", "job link", "job code", "company", "salary", "address",
-               "lat", "long", "tenure", "overview", "closes", "description"]
-    vac_sheet.append_row(headers)
-
-def set_sheets():
-    try:
-        vacancy_sheet = sh.worksheet("Vacancies")
-    except gspread.exceptions.WorksheetNotFound:
-        vacancy_sheet = sh.add_worksheet("Vacancies", rows="1000", cols="20")
-    try:
-        progress_sheet = sh.worksheet("Progress")
-    except gspread.exceptions.WorksheetNotFound:
-        progress_sheet = sh.add_worksheet("Progress", rows="100", cols="10")
-    try:
-        vac_data_sheet = sh.worksheet("VacancyData")
-    except gspread.exceptions.WorksheetNotFound:
-        vac_data_sheet = sh.add_worksheet("VacancyData", rows="1000", cols="20")
-    return vacancy_sheet, progress_sheet, vac_data_sheet
+spreadsheet = gc.open_by_url(spreadsheet_url)
+URL = "https://www.workforceaustralia.gov.au/individuals/jobs/search?locationCodes%5B0%5D=7&pageNumber="
 
 def set_driver():
-    user_agent = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                  "AppleWebKit/537.36 (KHTML, like Gecko) "
-                  "Chrome/132.0.0.0 Safari/537.36")
+    # set options and driver settings
+    user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
     options = webdriver.ChromeOptions()
     options.add_argument(f"user-agent={user_agent}")
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-extensions")
-    options.add_argument("--start-maximized")
+    options.add_argument('--start-maximized')
     driver = webdriver.Chrome(options=options)
     return driver
+
+class ProgressManager:
+    def __init__(self, progress_sheet):
+        self.progress_sheet = progress_sheet
+
+    def _is_first_execution(self):
+        try:
+            progress_json = self.progress_sheet.acell("A2").value
+            return not bool(progress_json)
+        except Exception:
+            return True
+
+    def save_progress(self, progress):
+        if self._is_first_execution():
+            progress = {
+                "Phase": "Scrapping",
+                "finished": False,
+                "UrlNum": 0,
+                "VacIndex": 0
+            }
+        try:
+            self.progress_sheet.update("A2", json.dumps(progress))
+        except Exception:
+            print("Failed to save progress.")
+
+    def load_progress(self):
+        try:
+            if self._is_first_execution():
+                progress = {
+                    "Phase": "Scrapping",
+                    "finished": False,
+                    "UrlNum": 0,
+                    "VacIndex": 0
+                }
+                return progress
+            else:
+                progress_json = self.progress_sheet.acell("A2").value
+                if progress_json:
+                    progress = json.loads(progress_json)
+                    return progress
+                else:
+                    raise Exception("No progress value found in A2")
+        except Exception:
+            print("Failed to load progress, finishing program")
+            return {"finished": True}
+
+def get_worksheet(sheet_name):
+    return spreadsheet.worksheet(sheet_name)
+
+def set_vacancy_sheet():
+    # set for vacancy sheet
+    worksheet = get_worksheet("Vacancies")
+    worksheet.clear()
+    headers = ["occupation", "occupation link", "date added", "time scrapped", "job title", "job link", "job code", "company", "salary",
+               "address", "lat", "long", "tenure", "overview", "closes", "description"]
+    worksheet.append_row(headers)
+    return worksheet
+
+def set_vacancy_data_sheet():
+    # set for VacancyData sheet
+    worksheet = get_worksheet("VacancyData")
+    worksheet.clear()
+    headers = ["job_title","job_link","job_code", "date_added","time_scrapped","overview"]
+    worksheet.append_row(headers)
+    return worksheet
 
 def append_row_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
@@ -108,194 +119,315 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
                 print(f"Error occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
             else:
-                raise
-
-def check_next_button(driver):
-    next_button = driver.find_elements(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-    return bool(next_button)
-
-def find_occupation_code(link):
-    code = r"/occupations/(\d+)/"
-    return re.findall(code, link)
-
-def overview_to_skills(link):
-    return re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
-
-def remove_hyperlink(cell_value):
-    if cell_value.startswith('=HYPERLINK('):
-        pattern = r'=HYPERLINK\("([^"]+)"\s*,\s*"[^"]+"\)'
-        match = re.match(pattern, cell_value)
-        if match:
-            return match.group(1)
-    return cell_value
+                print(f"Failed to append element {data} after {retries} attempts.")
+                return
 
 def is_first_execution(progress_sheet):
-    val = progress_sheet.acell("A2").value
-    return not val or val.strip() == ""
+    progress_value = progress_sheet.acell("A2").value
+    return not progress_value or progress_value.strip() == ""
 
-def main():
-    vacancy_sheet, progress_sheet, vac_data_sheet = set_sheets()
-    if is_first_execution(progress_sheet):
-        set_vacancy_sheet()
-    set_vac_data_sheet()
-    
-    progress = load_progress_occ(progress_sheet)
-    if progress.get("finished", False):
-        print("Process already finished.")
+def get_vacancy_data():
+    sheet = get_worksheet("VacancyData")
+    all_rows = sheet.get_all_values()
+    if not all_rows:
+        return []
+
+    header = all_rows[0]
+    vacancy_list = []
+    for row in all_rows[1:]:
+        row_dict = {header[i]: row[i] if i < len(row) else "" for i in range(len(header))}
+        vacancy_list.append(row_dict)
+    return vacancy_list
+
+def duplicate_list():
+    va_sheet = get_worksheet("Vacancies")
+    va_header = va_sheet.row_values(1)
+    try:
+        va_code_idx = va_header.index("job code") + 1
+    except ValueError as e:
+        print("Could not detect requested row", e)
         return
 
-    driver = set_driver()
-    url_data_list = list(extract())
-    outer = progress.get("outer", 0)
-    
-    while outer < len(url_data_list):
-        phase = progress.get("phase", "vacancy_extraction")
-        vacancy_index = progress.get("vacancy_index", 0)
-        detail_idx = progress.get("detail_index", 0)
-        
-        url_data = url_data_list[outer]
-        occupation = url_data[0]
-        va_occupation = url_data[1]
-        va_url = url_data[2]
-        
-        rows_to_append = []
-        
-        driver.get(va_url)
+    all_rows = va_sheet.get_all_values()[1:]
+    dup_list = []
+
+    for row_num, row in enumerate(all_rows, start=2):
+        va_code = row[va_code_idx - 1] if len(row) >= va_code_idx else ""
+        dup_list.append(va_code)
+    return dup_list
+
+def dict_to_row(data_dict):
+    return [data_dict.get(key, "") for key in ["job_title","job_link","job_code", "date_added","time_scrapped","overview"]]
+
+def wait_for_page_load(driver, timeout=15):
+    try:
+        WebDriverWait(driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+    except TimeoutException:
+        print("Page loading timeout.")
+    except Exception as e:
+        print(f"An error occurred while waiting for page load: {e}")
+
+def scrapping(driver):
+    wait = WebDriverWait(driver, 10)
+    data_sheet = get_worksheet("VacancyData")
+
+    progress_sheet = get_worksheet("Progress")
+    if is_first_execution(progress_sheet):
+        set_vacancy_sheet()
+    progress_manager = ProgressManager(progress_sheet)
+    progress = progress_manager.load_progress()
+    url_num = progress.get("UrlNum", 1)
+    while True:
+        va_url = URL + str(url_num)
+
+        try:
+            driver.get(va_url)
+        except Exception:
+            print(f"Failed to load page: {va_url}")
+            url_num += 1
+            continue
+
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(3)
-        
-        if phase == "vacancy_extraction":
-            while True:
-                vacancies = driver.find_elements(By.CSS_SELECTOR, 
-                    "section[class='mint-search-result-item has-img has-actions has-preheading']")
-                time.sleep(3)
-                vac_idx = vacancy_index
-                while vac_idx < len(vacancies):
-                    vacancy = vacancies[vac_idx]
-                    try:
-                        base_url = "https://www.workforceaustralia.gov.au"
-                        job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
-                        job_title = job_hyper.text
-                        job_href = job_hyper.get_attribute("href")
-                        job_link = urljoin(base_url, job_href)
-                        job_code = job_href.split('/')[-1]
-                    except NoSuchElementException:
-                        job_title = "No job title given"
-                        job_link = "No job link given"
-                        job_code = "No job code given"
-                    
-                    try:
-                        raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
-                        match = re.search(r'\d+', raw_date_added_dif)
-                        if match:
-                            date_added_dif = int(match.group())
-                        else:
-                            date_added_dif = 1
-                        today = datetime.date.today()
-                        date_added = today - datetime.timedelta(days=date_added_dif)
-                    except NoSuchElementException:
-                        date_added = "No date added given"
-                    
-                    time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-                    
-                    try:
-                        overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
-                    except NoSuchElementException:
-                        overview = "No overview given"
-                    
-                    row = [occupation, va_occupation, str(date_added), str(time_scrapped),
-                           job_title, job_link, job_code, "", "", "", "", "", "", overview, "", ""]
-                    rows_to_append.append(row)
-                    
-                    vac_idx += 1
-                    progress["vacancy_index"] = vac_idx
-                    save_progress_occ(progress_sheet, progress)
-                vacancy_index = 0
-                progress["vacancy_index"] = 0
-                save_progress_occ(progress_sheet, progress)
-                try:
-                    next_button = driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-                    driver.execute_script("arguments[0].click();", next_button)
-                    time.sleep(3)
-                except NoSuchElementException:
-                    break
-            if rows_to_append:
-                try:
-                    vac_data_sheet.append_rows(rows_to_append, value_input_option="USER_ENTERED")
-                except Exception as e:
-                    print("Error appending rows:", e)
-            progress["phase"] = "detail_extraction"
-            progress["detail_index"] = 0
-            save_progress_occ(progress_sheet, progress)
-        else:
-            records = vac_data_sheet.get_all_records()
-            all_vacancy_data = []
-            for record in records:
-                all_vacancy_data.append({
-                    "job_title": record["job title"],
-                    "job_link": record["job link"],
-                    "job_code": record["job code"],
-                    "date_added": record["date added"],
-                    "time_scrapped": record["time scrapped"],
-                    "overview": record["overview"]
-                })
-            if 'all_vacancy_data' not in locals():
-                all_vacancy_data = []
-                for record in records:
-                    all_vacancy_data.append({
-                        "job_title": record["job title"],
-                        "job_link": record["job link"],
-                        "job_code": record["job code"],
-                        "date_added": record["date added"],
-                        "time scrapped": record["time scrapped"],
-                        "overview": record["overview"]
-                    })
-        detail_idx = progress.get("detail_index", 0)
-        for i in range(detail_idx, len(all_vacancy_data)):
-            vac_element = all_vacancy_data[i]
-            driver.get(vac_element["job_link"])
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            time.sleep(3)
-            print(f"current page: {vac_element['job_title']}")
+        wait_for_page_load(driver)
+
+        vac_index = progress.get("VacIndex", 0)  # reset VacIndex for this OccIndex
+        set_vacancy_data_sheet()
+
+        while True:
             try:
-                company_elem = WebDriverWait(driver, 10).until(
-                    EC.visibility_of_element_located(
-                        (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
-                    )
+                vacancies = wait.until(EC.presence_of_all_elements_located(
+                    (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
+            except TimeoutException:
+                print(f"Vacancy elements for page {url_num} did not load in time.")
+                break
+            except Exception as e:
+                print(f"An error occurred while waiting for page load: {e}")
+                break
+
+            while vac_index < len(vacancies):
+                # find job code, update occupation index
+                vacancy = vacancies[vac_index]
+                # find job title
+                try:
+                    base_url = "https://www.workforceaustralia.gov.au"
+                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
+                    job_title = job_hyper.text
+                    job_href = job_hyper.get_attribute("href")
+                    job_link = urljoin(base_url, job_href)
+                    job_code = job_href.split('/')[-1]
+                except NoSuchElementException:
+                    job_title = "No job title given"
+                    job_link = "No job link given"
+                    job_code = "No job code given"
+
+                try:
+                    raw_date_added_dif = vacancy.find_element(By.CSS_SELECTOR, "div[class='preheading']").text
+                    match = re.search(r'\d+', raw_date_added_dif)
+                    if match:
+                        date_added_dif = int(match.group())
+                    else:
+                        date_added_dif = 1
+                    today = datetime.date.today()
+                    date_added = today - datetime.timedelta(days=date_added_dif)
+                except NoSuchElementException:
+                    date_added = "No date added given"
+
+                time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
+                try:
+                    overview = vacancy.find_element(By.CSS_SELECTOR, "span[class='mint-blurb__text-width']").text
+                except NoSuchElementException:
+                    overview = "No overview given"
+
+                vacancy_data = {
+                    "job_title": job_title,
+                    "job_link": job_link,
+                    "job_code": job_code,
+                    "date_added": str(date_added),
+                    "time_scrapped": str(time_scrapped),
+                    "overview": overview
+                }
+                vacancy_row = dict_to_row(vacancy_data)
+
+                append_row_with_retry(data_sheet, vacancy_row)
+                time.sleep(3)
+                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "VacIndex": vac_index}
+                progress_manager.save_progress(progress)
+                vac_index += 1
+
+        try:
+            next_button = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
+            driver.execute_script("arguments[0].click();", next_button)
+            wait_for_page_load(driver)
+            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num, "VacIndex": 0}
+            progress_manager.save_progress(progress)
+        except (NoSuchElementException, TimeoutException):
+            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1, "VacIndex": 0}
+            progress_manager.save_progress(progress)
+            break
+        except Exception as e:
+            print(f"An error occurred while finding next button: {e}")
+            break
+
+def detail(driver):
+    va_sheet = get_worksheet("Vacancies")
+    progress_sheet = get_worksheet("Progress")
+    if is_first_execution(progress_sheet):
+        set_vacancy_sheet()
+    progress_manager = ProgressManager(progress_sheet)
+    progress = progress_manager.load_progress()
+    url_num = progress.get("UrlNum", 1)
+
+    vac_index = progress.get("VacIndex", 0)  # reset VacIndex for this OccIndex
+    vacancy_data = get_vacancy_data()
+    seen_jobs = set(duplicate_list() or [])
+    while vac_index < len(vacancy_data):
+        vac_element = vacancy_data[vac_index]
+        # open detail page
+        driver.get(vac_element["job_link"])
+        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        wait_for_page_load(driver)
+        print(f"current page: {vac_element['job_title']}")
+
+        try:
+            company_elem = WebDriverWait(driver, 10).until(
+                EC.visibility_of_element_located(
+                    (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
                 )
-                company = company_elem.text
-            except (NoSuchElementException, TimeoutException, TimeoutError):
-                company = "No company given"
-            if vac_element['job_code'] in check_extract():
-                update_occupation_cell(vac_element['job_code'], occupation, va_occupation)
+            )
+            company = company_elem.text
+        except (NoSuchElementException, TimeoutException):
+            company = "No company given"
+        except Exception as e:
+            print(f"An error occurred while finding company data: {e}")
+            break
+
+        if vac_element['job_code'] in seen_jobs:
+            print(f"Duplicate found, skipping: {company}, {vac_element['job_title']}")
+            vac_index += 1
+            continue
+
+        try:
+            address = driver.find_element(By.CSS_SELECTOR, "div[class='address-text']").text
+        except NoSuchElementException:
+            address = "No address given"
+
+        try:
+            salary = driver.find_element(
+                By.CSS_SELECTOR,
+                "ul.job-info-metadata > li:nth-child(2) > span:nth-of-type(2)"
+            ).text
+        except NoSuchElementException:
+            salary = "No salary given"
+
+        try:
+            tenure = driver.find_element(
+                By.CSS_SELECTOR,
+                "ul.job-info-metadata > li:nth-child(3) > span:nth-of-type(2)"
+            ).text
+        except NoSuchElementException:
+            tenure = "No tenure given"
+
+        try:
+            closes = driver.find_element(By.CSS_SELECTOR,
+                                         "ul.job-info-metadata > li:nth-child(4) > span:nth-child(2)").text
+        except NoSuchElementException:
+            closes = "No close time given"
+
+        try:
+            all_cards = driver.find_elements(By.CSS_SELECTOR, "div.card-copy")
+            description_card = None
+            for card in all_cards:
+                try:
+                    header = card.find_element(By.CSS_SELECTOR, "h2")
+                    if "Job description" in header.text:
+                        description_card = card
+                        break
+                except Exception:
+                    continue
+            if description_card:
+                paragraphs = description_card.find_elements(By.TAG_NAME, "p")
+                job_description = "\n".join([p.text for p in paragraphs])
             else:
-                va_data = [
-                    occupation,
-                    va_occupation,
-                    vac_element["date_added"],
-                    vac_element["time_scrapped"],
-                    vac_element['job_title'],
-                    f'=HYPERLINK("{vac_element["job_link"]}", "{vac_element["job_link"]}")',
-                    vac_element['job_code'],
-                    company,
-                    "No salary given",
-                    "No address given",
-                    "No lat given",
-                    "No long given",
-                    "No tenure given",
-                    vac_element['overview'],
-                    "No close time given",
-                    "No description given"
-                ]
-                append_row_with_retry(vac_data_sheet, va_data)
-            detail_idx += 1
-            progress["detail_index"] = detail_idx
-            save_progress_occ(progress_sheet, progress)
-        outer += 1
-        progress = {"outer": outer, "phase": "vacancy_extraction", "vacancy_index": 0, "detail_index": 0}
-        save_progress_occ(progress_sheet, progress)
-    driver.quit()
-    print("Saved every data into the Google Sheet successfully.")
+                job_description = "No description given"
+
+        except NoSuchElementException:
+            job_description = "No description given"
+
+        try:
+            va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
+            link = va_map.get_attribute("href")
+            driver.get(link)
+            wait_for_page_load(driver)
+            map_url = driver.current_url
+            pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
+            match = re.search(pattern, map_url)
+            if match:
+                va_lat, va_long = match.groups()
+            else:
+                va_lat = "No lat given"
+                va_long = "No long given"
+        except NoSuchElementException:
+            va_lat = "No lat given"
+            va_long = "No long given"
+
+        va_job_link = f'=HYPERLINK("{vac_element['job_link']}", "{vac_element['job_link']}")'
+
+        va_data = [
+            "",
+            "",
+            vac_element["date_added"],
+            vac_element["time_scrapped"],
+            vac_element['job_title'],
+            va_job_link,
+            vac_element['job_code'],
+            company,
+            salary,
+            address,
+            va_lat,
+            va_long,
+            tenure,
+            vac_element['overview'],
+            closes,
+            job_description
+        ]
+        append_row_with_retry(va_sheet, va_data)
+        time.sleep(3)
+        seen_jobs.add(vac_element['job_code'])
+        vac_index += 1
+        progress = {"Phase": "Detail", "finished": False, "UrlNum": url_num, "VacIndex": vac_index}
+        progress_manager.save_progress(progress)
+
+    progress = {"Phase": "Scrapping", "finished": True, "UrlNum": 1, "VacIndex": 0}
+    progress_manager.save_progress(progress)
+
+def main():
+    driver = set_driver()
+    try:
+        progress_sheet = get_worksheet("Progress")
+        if is_first_execution(progress_sheet):
+            set_vacancy_sheet()
+        progress_manager = ProgressManager(progress_sheet)
+        progress = progress_manager.load_progress()
+
+        while not progress.get("finished"):
+            phase = progress.get("Phase")
+
+            if phase == "Scrapping":
+                scrapping(driver)
+
+            elif phase == "Detail":
+                detail(driver)
+            progress = progress_manager.load_progress()
+
+        print("Finished scrapping vacancy process.")
+
+    finally:
+        driver.quit()
+        print("Saved every data into the Google Sheet successfully.")
 
 if __name__ == "__main__":
     main()
