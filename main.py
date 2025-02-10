@@ -325,10 +325,7 @@ def detail(driver):
             continue
         driver.get(occ_detail_url)
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        if not wait_for_page_load(driver):
-            print(f"Page load failed for detail page: {occ_detail_url}. Skipping this detail page.")
-            occ_index += 1
-            continue
+        wait_for_page_load(driver)
         print(f"current page: {occ_element['occupation_name']}")
         current_url = driver.current_url
         codes = find_occupation_code(current_url)
