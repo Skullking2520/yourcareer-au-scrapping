@@ -265,20 +265,20 @@ def scrapping(driver):
                 time.sleep(3)
                 vac_index += 1
 
-        try:
-            next_button = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
-            driver.execute_script("arguments[0].click();", next_button)
-            wait_for_page_load(driver)
-            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
-            progress_manager.save_progress(progress)
-        except (NoSuchElementException, TimeoutException):
-            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
-            progress_manager.save_progress(progress)
-            break
-        except Exception as e:
-            print(f"An error occurred while finding next button: {e}")
-            break
+            try:
+                next_button = wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
+                driver.execute_script("arguments[0].click();", next_button)
+                wait_for_page_load(driver)
+                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
+                progress_manager.save_progress(progress)
+            except (NoSuchElementException, TimeoutException):
+                progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
+                progress_manager.save_progress(progress)
+                break
+            except Exception as e:
+                print(f"An error occurred while finding next button: {e}")
+                break
 
 def detail(driver):
     va_sheet = get_worksheet("Vacancies")

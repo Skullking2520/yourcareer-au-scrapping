@@ -288,21 +288,21 @@ def scrapping(driver):
                 append_row_with_retry(data_sheet, occupation_row)
                 occ_index += 1
 
-        try:
-            next_button = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
-            driver.execute_script("arguments[0].click();", next_button)
-            wait_for_page_load(driver)
-            url_num += 1
-            progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
-            progress_manager.save_progress(progress)
-        except (NoSuchElementException, TimeoutException):
-            progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
-            progress_manager.save_progress(progress)
-            break
-        except Exception as e:
-            print(f"An error occurred while finding next button: {e}")
-            break
+            try:
+                next_button = wait.until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
+                driver.execute_script("arguments[0].click();", next_button)
+                wait_for_page_load(driver)
+                url_num += 1
+                progress = {"Phase": "Scrapping", "finished": False, "UrlNum": url_num}
+                progress_manager.save_progress(progress)
+            except (NoSuchElementException, TimeoutException):
+                progress = {"Phase": "Detail", "finished": False, "UrlNum": 1}
+                progress_manager.save_progress(progress)
+                break
+            except Exception as e:
+                print(f"An error occurred while finding next button: {e}")
+                break
 
 def detail(driver):
     occ_sheet = get_worksheet("Occupation")
