@@ -83,7 +83,7 @@ class ProgressManager:
                 progress = {
                     "Phase": "Scrapping",
                     "finished": False,
-                    "UrlNum": 0,
+                    "UrlNum": 1,
                 }
                 return progress
             else:
