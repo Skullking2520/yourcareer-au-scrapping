@@ -64,7 +64,7 @@ class ProgressManager:
             progress = {
                 "Phase": "Scrapping",
                 "finished": False,
-                "UrlNum": 0
+                "UrlNum": 1
             }
         try:
             self.progress_sheet.update("A1", json.dumps(progress))
@@ -82,7 +82,7 @@ class ProgressManager:
                 progress = {
                     "Phase": "Scrapping",
                     "finished": False,
-                    "UrlNum": 0
+                    "UrlNum": 1
                 }
                 return progress
             else:
