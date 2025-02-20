@@ -1,48 +1,19 @@
+# occ_vac_compile.py
 import json
-from selenium import webdriver  # web scrapping
+import time
+
+import gspread
+from requests.exceptions import ReadTimeout
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from google.oauth2.service_account import Credentials  # google doc
-from requests.exceptions import ReadTimeout
-import time
-import os
-import re
-import gspread
+from selenium.webdriver.support.ui import WebDriverWait
 
-key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
-if not key_content:
-    raise FileNotFoundError("Service account key content not found in environment variable!")
+from google_form_package import Sheet
+from process_handler import ProcessHandler
 
-key_path = "service_account.json"
-with open(key_path, "w") as f:
-    f.write(key_content)
-
-scopes = [
-    'https://www.googleapis.com/auth/spreadsheets',
-    'https://www.googleapis.com/auth/drive'
-]
-spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
-credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
-gc = gspread.authorize(credentials)
-spreadsheet = gc.open_by_url(spreadsheet_url)
-
-def set_driver():
-    # set options and driver settings
-    user_agent = f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36"
-    options = webdriver.ChromeOptions()
-    options.add_argument(f"user-agent={user_agent}")
-    options.add_argument("--headless")
-    options.add_argument("--disable-gpu")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-extensions")
-    options.add_argument('--start-maximized')
-    driver = webdriver.Chrome(options=options)
-    return driver
-
-def get_worksheet(sheet_name):
-    return spreadsheet.worksheet(sheet_name)
+web_sheet = Sheet()
+driver = web_sheet.set_driver()
 
 def append_row_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
@@ -56,18 +27,19 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             else:
                 raise
 
-def remove_hyperlink(cell_value):
-    # remove hyper link
-    if cell_value.startswith('=HYPERLINK('):
-        pattern = r'=HYPERLINK\("([^"]+)"\s*,\s*"[^"]+"\)'
-        match = re.match(pattern, cell_value)
-        if match:
-            return match.group(1)
-    return cell_value
+def wait_for_page_load(wait_driver, timeout=15):
+    try:
+        WebDriverWait(wait_driver, timeout).until(
+            lambda d: d.execute_script("return document.readyState") == "complete"
+        )
+    except TimeoutException:
+        print("Page loading timeout.")
+    except Exception as e:
+        print(f"An error occurred while waiting for page load: {e}")
 
-def extract():
+def extract_occupation():
     # extract occupation link, title, vacancy link
-    oc_sheet = get_worksheet("Occupation")
+    oc_sheet = web_sheet.get_worksheet("Occupation")
     oc_header = oc_sheet.row_values(1)
     try:
         occupation_idx = oc_header.index("occupation") + 1
@@ -84,17 +56,12 @@ def extract():
     for row_num, row in enumerate(all_rows, start=2):
         occupation = row[occupation_idx - 1] if len(row) >= occupation_idx else ""
         occupation_link = row[occupation_link_idx - 1] if len(row) >= occupation_link_idx else ""
-        vacancies_value = row[vacancies_idx - 1] if len(row) >= vacancies_idx else ""
-
-        vacancies_url = remove_hyperlink(vacancies_value)
-
-        mod_va_occupation = f"{occupation}:{occupation_link}"
-        occupation_list.append([mod_va_occupation, vacancies_url])
+        vacancies_url = row[vacancies_idx - 1] if len(row) >= vacancies_idx else ""
+        occupation_list.append([occupation, occupation_link, vacancies_url])
     return occupation_list
 
-def load_required_vacancy():
-
-    va_sheet = get_worksheet("Vacancies")
+def extract_vacancy():
+    va_sheet = web_sheet.get_worksheet("Vacancies")
     va_header = va_sheet.row_values(1)
 
     try:
@@ -104,127 +71,95 @@ def load_required_vacancy():
         return
 
     rows = va_sheet.get_all_values()
+    vacancy_list = []
     va_job_code = {}
     for row_num, row in enumerate(rows[1:], start=2):
         job_code = row[job_code_index - 1] if len(row) >= job_code_index else ""
         occ_ori = row[occupation_index - 1] if len(row) >= occupation_index else ""
         va_job_code[job_code] = {"row": row_num, "occupation": occ_ori}
-    return va_job_code, occupation_index, va_sheet
+        vacancy_list.append([va_job_code, occupation_index])
+    return vacancy_list
 
-def save_cache(job_code, va_occupation, job_code_cache, pending_updates, occupation_index):
-    if job_code in job_code_cache:
-        row = job_code_cache[job_code]["row"]
-        current_value = job_code_cache[job_code]["occupation"]
-        if current_value:
-            new_value = current_value + "," + str(va_occupation)
-        else:
-            new_value = str(va_occupation)
-        job_code_cache[job_code]["occupation"] = new_value
-        pending_updates[(row, occupation_index)] = new_value
-    else:
-        print(f"job_code:{job_code} not in cache")
+def batch_update_cells(worksheet, row_num, updates):
+    sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
+    requests = []
 
-def update_occ_row(va_sheet, pending_updates):
-    if pending_updates:
-        cells_to_update = []
-        for (row, col), value in pending_updates.items():
-            cells_to_update.append(gspread.Cell(row, col, value))
-        try:
-            va_sheet.update_cells(cells_to_update, value_input_option="USER_ENTERED")
-            pending_updates.clear()
-        except Exception:
-            print("Cache update error")
+    for col, value in updates:
+        requests.append({
+            "updateCells": {
+                "range": {
+                    "sheetId": sheet_id,
+                    "startRowIndex": row_num - 1,
+                    "endRowIndex": row_num,
+                    "startColumnIndex": col - 1,
+                    "endColumnIndex": col
+                },
+                "rows": [{
+                    "values": [{
+                        "userEnteredValue": {"stringValue": str(value)}
+                    }]
+                }],
+                "fields": "userEnteredValue"
+            }
+        })
 
-_progress_cache_occ = None
-
-def is_first_execution(progress_sheet):
-    global _progress_cache_occ
-    if _progress_cache_occ is not None:
-        return not bool(_progress_cache_occ.strip())
-    progress_value = progress_sheet.acell("A3").value
-    _progress_cache_occ = progress_value if progress_value else ""
-    return not _progress_cache_occ.strip()
-
-def save_progress_occ(progress_sheet, progress):
-    global _progress_cache_occ
-    if is_first_execution(progress_sheet):
-        progress = {"finished": False , "OccIndex": 0}
-    try:
-        _progress_cache_occ = json.dumps(progress)
-        progress_sheet.update("A3", json.dumps(progress))
-    except Exception:
-        print("Failed to save progress.")
-
-def load_progress_occ(progress_sheet):
-    global _progress_cache_occ
-    try:
-        if _progress_cache_occ is not None:
-            return json.loads(_progress_cache_occ)
-        if is_first_execution(progress_sheet):
-            progress = {"finished": False, "OccIndex": 0}
-            _progress_cache_occ = json.dumps(progress)
-            return progress
-        else:
-            progress_json = progress_sheet.acell("A3").value
-            _progress_cache_occ = progress_json if progress_json else ""
-            if progress_json:
-                progress = json.loads(progress_json)
-                return progress
-            else:
-                raise Exception("No progress value found in A3")
-    except Exception:
-        print("Failed to load progress, finishing program")
-        return {"finished": True}
+    body = {"requests": requests}
+    worksheet.spreadsheet.batch_update(body)
 
 def main():
-    driver = set_driver()
     wait = WebDriverWait(driver, 10)
-    progress_sheet = get_worksheet("Progress")
-    progress = load_progress_occ(progress_sheet)
+    va_sheet = web_sheet.get_worksheet("Vacancies")
+    progress_sheet = web_sheet.get_worksheet("Progress")
+    ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 0}, "A5")
+    progress = ph.load_progress()
+    occ_extracted_list = extract_occupation()
+    vac_extracted_list = extract_vacancy()
+    vac_sheet_header = va_sheet.row_values(1)
+    try:
+        col_occupation = vac_sheet_header.index("occupation") + 1
+        col_occ_link = vac_sheet_header.index("occupation link") + 1
+    except ValueError:
+        print("Column not in sheet")
+        return
 
-    extracted_list = extract()
-    if not extracted_list:
+    if not occ_extracted_list:
         print("No Occupation data, shutting down program.")
         driver.quit()
         return
 
-    job_code_cache, occupation_index, va_sheet = load_required_vacancy()
-    if not job_code_cache:
-        print("Failed to load vacancy cache, shutting down program.")
-        driver.quit()
-        return
-
-    pending_updates = {}
-    check_list = list(job_code_cache.keys())
-    occ_index = progress.get("OccIndex", 0)
-
-    while occ_index < len(extracted_list):
-        url_data = extracted_list[occ_index]
-        va_occupation = url_data[0]
-        va_url = url_data[1]
+    while not progress["progress"] == "finished":
+        progress["progress"] = "processing"
+        occ_data = occ_extracted_list[progress["RowNum"]]
+        occ_name = occ_data[0]
+        occ_url = occ_data[1]
+        va_url = occ_data[2]
 
         try:
             driver.get(va_url)
         except Exception:
-            print(f"Failed to load page: {va_url}")
-            occ_index += 1
+            print(f"Failed to load page: {occ_name}")
+            progress["RowNum"] += 1
             continue
 
+        progress["RowNum"] += 1
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        time.sleep(3)
+        wait_for_page_load(driver)
+        print(f"current page: {occ_name}")
 
-        vac_index = 0 # reset VacIndex for this OccIndex
-        while True:
+        match_index = []
+
+        for va in vac_extracted_list:
             try:
-                vacancies = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
+                vacancies = wait.until(EC.presence_of_all_elements_located(
+                    (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
             except TimeoutException:
-                print(f"Vacancy elements for occupation index({occ_index}) did not load in time.")
+                print(f"Vacancy elements did not load in time.")
+                break
+            except Exception as e:
+                print(f"An error occurred while waiting for page load: {e}")
                 break
 
-            vac_index = 0
-            while vac_index < len(vacancies):
-                # find job code, update occupation index
-                vacancy = vacancies[vac_index]
+            for vacancy in vacancies:
                 try:
                     job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
                     job_href = job_hyper.get_attribute("href")
@@ -232,34 +167,29 @@ def main():
                 except NoSuchElementException:
                     job_code = "No job code given"
 
-                if job_code in check_list:
-                    save_cache(job_code, va_occupation, job_code_cache, pending_updates, occupation_index)
-                else:
-                    print(f"{job_code} not in list.")
+                if va[0] == job_code:
+                    match_index.append(va[1])
 
-                vac_index += 1
-
-                progress = {"finished": False, "OccIndex": occ_index}
-                save_progress_occ(progress_sheet, progress)
-            update_occ_row(va_sheet, pending_updates)
-
-            try:
-                next_button = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "button[aria-label='Go to next page']")))
-                driver.execute_script("arguments[0].click();", next_button)
+            for row_num in match_index:
+                update = [
+                    (col_occupation, occ_name),
+                    (col_occ_link, occ_url)
+                ]
+                batch_update_cells(va_sheet, row_num, update)
                 time.sleep(3)
-            except (NoSuchElementException, TimeoutException):
-                break
-            except Exception as e:
-                print(f"An error occurred while finding next button: {e}")
-                break
 
-        occ_index += 1
-        progress = {"finished": False, "OccIndex": occ_index}
-        save_progress_occ(progress_sheet, progress)
+        try:
+            driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
+        except NoSuchElementException:
+            progress["progress"] = "finished"
+            ph.save_progress(progress)
+            print("Finished scrapping")
+            break
+        except Exception as e:
+            print(f"An error occurred while finding next button: {e}")
+            break
 
-    update_occ_row(va_sheet, pending_updates)
-    progress = {"finished": True, "OccIndex": occ_index}
-    save_progress_occ(progress_sheet, progress)
+    progress_sheet.update("A5", [[json.dumps({"progress": "setting", "RowNum": 0})]])
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
