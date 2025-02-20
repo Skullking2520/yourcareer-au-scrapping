@@ -59,12 +59,26 @@ def overview_to_skills(link):
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
 
+def retry_batch_update(spreadsheet, body, retries=3, delay=5):
+    """batch_update 호출 시 500 내부 오류 발생 시 재시도하는 함수"""
+    for attempt in range(retries):
+        try:
+            return spreadsheet.batch_update(body)
+        except gspread.exceptions.APIError as e:
+            if "500" in str(e) or "Internal" in str(e) or isinstance(e, ReadTimeout):
+                print(f"Internal error encountered: {e}. Retrying in {delay} seconds... (attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    raise Exception("Batch update failed after multiple retries.")
+
 def batch_update_cells(worksheet, row_num, updates):
     sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
-    requests = []
+    requests_list = []
 
     for col, value in updates:
-        requests.append({
+        requests_list.append({
             "updateCells": {
                 "range": {
                     "sheetId": sheet_id,
@@ -82,8 +96,8 @@ def batch_update_cells(worksheet, row_num, updates):
             }
         })
 
-    body = {"requests": requests}
-    worksheet.spreadsheet.batch_update(body)
+    body = {"requests": requests_list}
+    retry_batch_update(worksheet.spreadsheet, body)
 
 def main():
     occ_sheet = web_sheet.get_worksheet("Occupation")
