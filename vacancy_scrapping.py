@@ -105,7 +105,7 @@ def main():
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
-            va_url = "https://www.workforceaustralia.gov.au/individuals/jobs/search?locationCodes%5B0%5D=7&pageNumber=" + str(progress["UrlNum"])
+            va_url = "https://www.workforceaustralia.gov.au/individuals/jobs/search?locationCodes%5B0%5D=7&jobAge=3&pageNumber=" + str(progress["UrlNum"])
             driver.get(va_url)
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             wait_for_page_load(driver)
