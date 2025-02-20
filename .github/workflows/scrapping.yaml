@@ -1,4 +1,4 @@
-name: Run Scraping
+name: Run occ_vac project
 
 on:
   push:
@@ -45,42 +45,85 @@ jobs:
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
-        python main.py
+        python occupation_scrapping.py
         
-  run-vacancies-scraping:
-    runs-on: [self-hosted, runner]
-    timeout-minutes: 0
-
+  run-occ-datail-scraping:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
     steps:
-    - name: Wait for 15 minutes
-      shell: powershell
-      run: Start-Sleep -Seconds 900
-
     - name: Checkout repository
       uses: actions/checkout@v3
-
+    
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: "3.x"
-
+    
     - name: Install dependencies
-      shell: powershell
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-
-    - name: Run Vacancies Scraping
-      shell: powershell
+    
+    - name: Run Occupation Detail Scraping
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
-        python vacancy.py
+        python occupation_detail.py
+
+  run-vacancy-scraping:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_scrapping.py
         
+  run-vac-detail-scraping:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail.py
+
   run-occ-vac-compile:
     needs: 
-      - run-occupation-scraping
-      - run-vacancies-scraping
+      - run-occ-datail-scraping
+      - run-vac-detail-scraping
     runs-on: ubuntu-latest
     
     steps:
