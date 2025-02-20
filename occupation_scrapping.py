@@ -225,7 +225,7 @@ def main():
             print(f"Error processing job: {e}")
             progress['UrlNum'] += 1
             continue
-
+    time.sleep(5)
     set_occupation_data_sheet()
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
