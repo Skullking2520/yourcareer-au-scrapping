@@ -50,6 +50,8 @@ def set_vacancy_data_sheet():
 
 def load_to_seen_data():
     vac_sheet = web_sheet.get_worksheet("Vacancies")
+    data_sheet = web_sheet.get_worksheet("VacancyData")
+    data_sheet.clear()
     vac_header = vac_sheet.row_values(1)
     try:
         vac_code_idx = vac_header.index("job code") + 1
@@ -61,7 +63,6 @@ def load_to_seen_data():
     for row_num, row in enumerate(all_rows, start=2):
         vac_code = row[vac_code_idx - 1] if len(row) >= vac_code_idx else ""
         dup_list.append([vac_code])
-    data_sheet = web_sheet.get_worksheet("VacancyData")
     if dup_list:
         data_sheet.append_rows(dup_list, value_input_option="USER_ENTERED")
 
