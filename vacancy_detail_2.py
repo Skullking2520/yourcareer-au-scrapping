@@ -75,8 +75,9 @@ def batch_update_cells(worksheet, row_num, updates, retries=3, delay=10):
             worksheet.spreadsheet.batch_update(body)
             return
         except gspread.exceptions.APIError as e:
-            if "429" in str(e):
-                print(f"Quota exceeded. Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
+            error_message = str(e)
+            if "429" in error_message or "503" in error_message:
+                print(f"API Error ({error_message}). Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
             else:
