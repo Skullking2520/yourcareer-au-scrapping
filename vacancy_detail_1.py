@@ -24,6 +24,10 @@ def wait_for_page_load(wait_driver, timeout=15):
         print("Page loading timeout.")
     except Exception as e:
         print(f"An error occurred while waiting for page load: {e}")
+        
+def wait_for_map_url(driver, timeout=20):
+    WebDriverWait(driver, timeout).until(lambda d: "google.com/maps/place" in d.current_url)
+    return driver.current_url
 
 def extract():
     # extract from Sheet1
@@ -130,14 +134,15 @@ def main():
                     print(f"current page: {url}")
 
                     try:
-                        company_elem = WebDriverWait(driver, 10).until(
-                            EC.visibility_of_element_located(
-                                (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
-                            )
-                        )
-                        company = company_elem.text
-                    except (NoSuchElementException, TimeoutException):
-                        company = "No company given"
+                        company_element = driver.find_element(By.XPATH, "//p[b[contains(text(), 'Company:')]]")
+                        company_text = company_element.text
+                        company = company_text.replace("Company:", "").strip()
+                    except NoSuchElementException:
+                        try:
+                            company_element = driver.find_element(By.XPATH, "//div[contains(@class, 'text-lg')]//p/a")
+                            company = company_element.text.strip()
+                        except NoSuchElementException:
+                            company = "No company given"
                     except Exception as e:
                         print(f"An error occurred while finding company data: {e}")
                         break
@@ -193,7 +198,7 @@ def main():
                         va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
                         link = va_map.get_attribute("href")
                         driver.get(link)
-                        wait_for_page_load(driver)
+                        wait_for_map_url(driver)
                         map_url = driver.current_url
                         pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
                         match = re.search(pattern, map_url)
