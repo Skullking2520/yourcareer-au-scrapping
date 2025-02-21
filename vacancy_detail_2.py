@@ -195,7 +195,7 @@ def main():
                         va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
                         link = va_map.get_attribute("href")
                         driver.get(link)
-                        WebDriverWait(driver, 20).until(lambda d: "google.com/maps/place" in d.current_url)
+                        WebDriverWait(driver, 30).until(lambda d: "@" in d.current_url)
                         map_url = driver.current_url
                         pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
                         match = re.search(pattern, map_url)
@@ -204,7 +204,8 @@ def main():
                         else:
                             va_lat = "No lat given"
                             va_long = "No long given"
-                    except NoSuchElementException:
+                    except (NoSuchElementException, TimeoutException) as e:
+                        print("Map extraction error:", e)
                         va_lat = "No lat given"
                         va_long = "No long given"
 
