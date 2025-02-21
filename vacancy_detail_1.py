@@ -44,7 +44,7 @@ def extract():
         link_list.append({"link_row_num":row_num, "detail_url":link})
     return link_list
 
-def batch_update_cells(worksheet, row_num, updates):
+def batch_update_cells(worksheet, row_num, updates, retries=3, delay=10):
     sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
     requests = []
 
@@ -68,7 +68,20 @@ def batch_update_cells(worksheet, row_num, updates):
         })
 
     body = {"requests": requests}
-    worksheet.spreadsheet.batch_update(body)
+
+    for attempt in range(retries):
+        try:
+            worksheet.spreadsheet.batch_update(body)
+            return
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Quota exceeded. Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    print("Failed to update cells after several attempts.")
+
 
 def main():
     va_sheet = web_sheet.get_worksheet("Vacancies")
