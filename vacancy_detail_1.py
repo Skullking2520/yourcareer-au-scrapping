@@ -139,13 +139,14 @@ def main():
                         company = company_text.replace("Company:", "").strip()
                     except NoSuchElementException:
                         try:
-                            company_element = driver.find_element(By.XPATH, "//div[contains(@class, 'text-lg')]//p/a")
-                            company = company_element.text.strip()
+                            company_elem = WebDriverWait(driver, 10).until(
+                            EC.visibility_of_element_located((By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")))
+                            company = company_elem.text
                         except NoSuchElementException:
                             company = "No company given"
                     except Exception as e:
                         print(f"An error occurred while finding company data: {e}")
-                        break
+                        company = "No company given"
 
                     try:
                         address = driver.find_element(By.CSS_SELECTOR, "div[class='address-text']").text
