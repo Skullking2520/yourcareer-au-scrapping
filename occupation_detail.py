@@ -267,7 +267,8 @@ def main():
                             skills_text = "No skills given"
                         except Exception:
                             skills_text = "No skills given"
-                    except NoSuchElementException:
+                    except (NoSuchElementException, TimeoutException) as e:
+                        print(f"Error loading skills tab: {e}")
                         skills_text = "Failed to load skills page"
 
                 updates = [(col_description, description),
