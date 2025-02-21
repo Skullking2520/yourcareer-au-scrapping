@@ -104,7 +104,7 @@ def main():
     except ValueError:
         print("Column not in sheet")
         return
-
+    driver.set_page_load_timeout(120)
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
@@ -124,7 +124,32 @@ def main():
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
                     progress["RowNum"] += 2
                 else:
-                    driver.get(url)
+                    max_retries = 3
+                    loaded = False
+                    for attempt in range(1, max_retries + 1):
+                        try:
+                            print(f"loading page, attempt {attempt}: {url}")
+                            driver.get(url)
+                            loaded = True
+                            break
+                        except TimeoutException:
+                            print(f"Timeout occured in {attempt} attempt: {url}")
+                            if attempt < max_retries:
+                                time.sleep(5)
+                            else:
+                                print("Exceed max retry, skiping page.")
+                                loaded = False
+                    if not loaded:
+                        company = "Failed to load detail page"
+                        salary = "Failed to load detail page"
+                        address = "Failed to load detail page"
+                        va_lat = "Failed to load detail page"
+                        va_long = "Failed to load detail page"
+                        tenure = "Failed to load detail page"
+                        closes = "Failed to load detail page"
+                        job_description = "Failed to load detail page"
+                        progress["RowNum"] += 2
+                        continue
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     wait_for_page_load(driver)
                     print(f"current page: {url}")
