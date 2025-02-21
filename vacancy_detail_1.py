@@ -108,7 +108,7 @@ def main():
                     closes = "Failed to load detail page"
                     job_description = "Failed to load detail page"
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
-                    progress["RowNum"] += 10
+                    progress["RowNum"] += 2
                 else:
                     driver.get(url)
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -204,7 +204,7 @@ def main():
                 ]
                 batch_update_cells(va_sheet, row_num, va_data)
                 time.sleep(3)
-                progress["RowNum"] += 1
+                progress["RowNum"] += 2
             progress["progress"] = "finished"
         except NoSuchElementException as e:
             print(f"Error processing detail: {e}")
