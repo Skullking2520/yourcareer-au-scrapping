@@ -2,6 +2,7 @@
 import json
 import re
 import time
+import gspread
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
