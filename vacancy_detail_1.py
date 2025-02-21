@@ -108,7 +108,7 @@ def main():
                     closes = "Failed to load detail page"
                     job_description = "Failed to load detail page"
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
-                    progress["RowNum"] += 1
+                    progress["RowNum"] += 10
                 else:
                     driver.get(url)
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -210,8 +210,8 @@ def main():
             print(f"Error processing detail: {e}")
             continue
 
-    progress_sheet.update("A1", [[json.dumps({"progress": "setting", "UrlNum": 1})]])
-    progress_sheet.update("A2", [[json.dumps({"progress": "setting", "RowNum": 0})]])
+    progress_sheet.update("A3", [[json.dumps({"progress": "setting", "UrlNum": 1})]])
+    progress_sheet.update("A4", [[json.dumps({"progress": "setting", "RowNum": 0})]])
     va_sheet.update([["Scrapping Finished"]], "Q1")
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
