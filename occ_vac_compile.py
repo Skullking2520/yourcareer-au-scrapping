@@ -126,9 +126,9 @@ def main():
         driver.quit()
         return
 
-    print("루프 시작: progress =", progress, ", RowNum =", progress["RowNum"])
+    print("starting loop: progress =", progress, ", RowNum =", progress["RowNum"])
     while not progress["progress"] == "finished":
-        print("루프 내부 시작: progress =", progress, ", RowNum =", progress["RowNum"])
+        print("starting inner loop: progress =", progress, ", RowNum =", progress["RowNum"])
         progress["progress"] = "processing"
         occ_data = occ_extracted_list[progress["RowNum"]]
         occ_name = occ_data[0]
@@ -155,10 +155,8 @@ def main():
 
         for va in vac_extracted_list:
             try:
-                print("[main] Before wait.until for vacancy elements")
                 vacancies = wait.until(EC.presence_of_all_elements_located(
                     (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
-                print("[main] After wait.until for vacancy elements")
             except TimeoutException:
                 print(f"Vacancy elements did not load in time.")
                 break
@@ -174,9 +172,11 @@ def main():
                 except NoSuchElementException:
                     job_code = "No job code given"
 
-                if va[0] == job_code:
+                if str(va[0]) == str(job_code):
+                    print(f"match found: {va[0]}")
                     match_index.append(va[1])
-
+                    
+            print("matching found finished")
             for row_num in match_index:
                 update = [
                     (col_occupation, occ_name),
