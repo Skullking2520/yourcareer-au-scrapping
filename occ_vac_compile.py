@@ -72,12 +72,11 @@ def extract_vacancy():
 
     rows = va_sheet.get_all_values()
     vacancy_list = []
-    va_job_code = {}
+
     for row_num, row in enumerate(rows[1:], start=2):
         job_code = row[job_code_index - 1] if len(row) >= job_code_index else ""
         occ_ori = row[occupation_index - 1] if len(row) >= occupation_index else ""
-        va_job_code[job_code] = {"row": row_num, "occupation": occ_ori}
-        vacancy_list.append([va_job_code, occupation_index])
+        vacancy_list.append([job_code, row_num])
     return vacancy_list
 
 def batch_update_cells(worksheet, row_num, updates):
