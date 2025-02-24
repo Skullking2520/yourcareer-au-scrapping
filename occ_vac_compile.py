@@ -127,16 +127,20 @@ def main():
         driver.quit()
         return
 
+    print("루프 시작: progress =", progress, ", RowNum =", progress["RowNum"])
     while not progress["progress"] == "finished":
+        print("루프 내부 시작: progress =", progress, ", RowNum =", progress["RowNum"])
         progress["progress"] = "processing"
         occ_data = occ_extracted_list[progress["RowNum"]]
         occ_name = occ_data[0]
         occ_url = occ_data[1]
         va_url = occ_data[2]
-        print(f"[main] Processing Row {progress['RowNum']+1}: {occ_name}")
+        print(f"[main] Before driver.get - Processing Row {progress['RowNum']+1}: {occ_name}")
         
         try:
+            print(f"[main] Calling driver.get({va_url})")
             driver.get(va_url)
+            print("[main] After driver.get")
         except Exception:
             print(f"Failed to load page: {occ_name}")
             progress["RowNum"] += 1
@@ -144,15 +148,18 @@ def main():
 
         progress["RowNum"] += 1
         driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+        print("[main] Before wait_for_page_load")
         wait_for_page_load(driver)
-        print(f"current page: {occ_name}")
+        print("[main] After wait_for_page_load - current page:", occ_name)
 
         match_index = []
 
         for va in vac_extracted_list:
             try:
+                print("[main] Before wait.until for vacancy elements")
                 vacancies = wait.until(EC.presence_of_all_elements_located(
                     (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
+                print("[main] After wait.until for vacancy elements")
             except TimeoutException:
                 print(f"Vacancy elements did not load in time.")
                 break
