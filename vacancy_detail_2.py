@@ -24,7 +24,7 @@ def wait_for_page_load(wait_driver, timeout=15):
         print("Page loading timeout.")
     except Exception as e:
         print(f"An error occurred while waiting for page load: {e}")
-
+        
 def extract():
     # extract from Sheet1
     occ_sheet = web_sheet.get_worksheet("Vacancies")
@@ -45,29 +45,28 @@ def extract():
         link_list.append({"link_row_num":row_num, "detail_url":link})
     return link_list
 
-def batch_update_cells(worksheet, row_num, updates, retries=3, delay=10):
+def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
     sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
     requests = []
-
-    for col, value in updates:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": row_num - 1,
-                    "endRowIndex": row_num,
-                    "startColumnIndex": col - 1,
-                    "endColumnIndex": col
-                },
-                "rows": [{
-                    "values": [{
-                        "userEnteredValue": {"stringValue": str(value)}
-                    }]
-                }],
-                "fields": "userEnteredValue"
-            }
-        })
-
+    for row_num, updates in updates_list:
+        for col, value in updates:
+            requests.append({
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": row_num - 1,
+                        "endRowIndex": row_num,
+                        "startColumnIndex": col - 1,
+                        "endColumnIndex": col
+                    },
+                    "rows": [{
+                        "values": [{
+                            "userEnteredValue": {"stringValue": str(value)}
+                        }]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            })
     body = {"requests": requests}
 
     for attempt in range(retries):
@@ -83,7 +82,6 @@ def batch_update_cells(worksheet, row_num, updates, retries=3, delay=10):
             else:
                 raise
     print("Failed to update cells after several attempts.")
-
 
 def main():
     va_sheet = web_sheet.get_worksheet("Vacancies")
@@ -106,6 +104,7 @@ def main():
         print("Column not in sheet")
         return
     driver.set_page_load_timeout(120)
+    pending_updates = []
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
@@ -246,15 +245,24 @@ def main():
                         (col_closes, closes),
                         (col_description, job_description)
                 ]
-                batch_update_cells(va_sheet, row_num, va_data)
+                pending_updates.append((row_num, va_data))
                 time.sleep(3)
-                progress["RowNum"] += 2
+                progress["RowNum"] += 4
+                if len(pending_updates) >= 20:
+                    batch_update_multiple_rows(va_sheet, pending_updates)
+                    pending_updates = []
+
+            if pending_updates:
+                batch_update_multiple_rows(va_sheet, pending_updates)
+                pending_updates = []
+                
             progress["progress"] = "finished"
         except NoSuchElementException as e:
             print(f"Error processing detail: {e}")
             continue
 
     progress_sheet.update([[json.dumps({"progress": "setting", "RowNum": 1})]], "B4")
+    va_sheet.update([["Scrapping Finished"]], "Q1")
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
