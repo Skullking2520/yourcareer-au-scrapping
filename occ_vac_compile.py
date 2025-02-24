@@ -133,7 +133,8 @@ def main():
         occ_name = occ_data[0]
         occ_url = occ_data[1]
         va_url = occ_data[2]
-
+        print(f"[main] Processing Row {progress['RowNum']+1}: {occ_name}")
+        
         try:
             driver.get(va_url)
         except Exception:
