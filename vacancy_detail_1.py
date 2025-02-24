@@ -254,14 +254,12 @@ def main():
             print(f"Error processing detail: {e}")
             continue
 
-    progress_sheet.update("A3", [[json.dumps({"progress": "setting", "UrlNum": 1})]])
-    progress_sheet.update("A4", [[json.dumps({"progress": "setting", "RowNum": 0})]])
+    progress_sheet.update([[json.dumps({"progress": "setting", "UrlNum": 1})]], "A3")
+    progress_sheet.update([[json.dumps({"progress": "setting", "RowNum": 0})]], "A4")
+    progress_sheet.update([[json.dumps({"progress": "setting", "RowNum": 0})]], "B4")
     va_sheet.update([["Scrapping Finished"]], "Q1")
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
-
-    if __name__ == "__main__":
-        main()
 
 if __name__ == "__main__":
     main()
