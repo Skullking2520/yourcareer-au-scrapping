@@ -2,8 +2,9 @@
 import json
 import re
 import time
-import gspread
 
+import gspread
+from requests.exceptions import ReadTimeout
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
