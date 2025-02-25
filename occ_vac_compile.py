@@ -120,7 +120,6 @@ def main():
         return
 
     while progress["RowNum"] < len(occ_extracted_list):
-        print("starting inner loop: progress =", progress, ", RowNum =", progress["RowNum"])
         progress["progress"] = "processing"
         occ_data = occ_extracted_list[progress["RowNum"]]
         occ_name = occ_data[0]
@@ -140,7 +139,6 @@ def main():
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
             wait_for_page_load(driver)
-            print(f"current page: {pagenum}")
 
             for attempt in range(3):
                 try:
@@ -176,7 +174,6 @@ def main():
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
                 pagenum += 1
             except NoSuchElementException:
-                print("Applying to vacancy form")
                 update_cells_append_batch(va_sheet, match_index, col_occupation, occ_name)
                 update_cells_append_batch(va_sheet, match_index, col_occ_link, occ_url)
                 time.sleep(3)
