@@ -127,75 +127,83 @@ def main():
         return
 
     print("starting loop: progress =", progress, ", RowNum =", progress["RowNum"])
-    while not progress["progress"] == "finished":
+    while progress["RowNum"] < len(occ_extracted_list):
         print("starting inner loop: progress =", progress, ", RowNum =", progress["RowNum"])
         progress["progress"] = "processing"
         occ_data = occ_extracted_list[progress["RowNum"]]
         occ_name = occ_data[0]
         occ_url = occ_data[1]
-        va_url = occ_data[2]
-        print(f"[main] Before driver.get - Processing Row {progress['RowNum']+1}: {occ_name}")
+        raw_va_url = occ_data[2]
+        va_url = str(raw_va_url) + "&pageNumber="
         
-        try:
-            print(f"[main] Calling driver.get({va_url})")
-            driver.get(va_url)
-            print("[main] After driver.get")
-        except Exception:
-            print(f"Failed to load page: {occ_name}")
-            progress["RowNum"] += 1
-            continue
+        pagenum = 0
+        while True:
+            print(f"[main] Before driver.get - Processing Row {progress['RowNum']}: {occ_name}")
+            try:
+                print(f"[main] Calling driver.get({va_url})")
+                driver.get(va_url + str(pagenum))
+                print("[main] After driver.get")
+            except Exception:
+                print(f"Failed to load page: {occ_name}")
+                progress["RowNum"] += 1
+                break
+                
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            print("[main] Before wait_for_page_load")
+            wait_for_page_load(driver)
+            print("[main] After wait_for_page_load - current page:", occ_name)
+    
+            match_index = []
 
-        progress["RowNum"] += 1
-        driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-        print("[main] Before wait_for_page_load")
-        wait_for_page_load(driver)
-        print("[main] After wait_for_page_load - current page:", occ_name)
-
-        match_index = []
-
-        for va in vac_extracted_list:
             try:
                 vacancies = wait.until(EC.presence_of_all_elements_located(
-                    (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
+                        (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
             except TimeoutException:
                 print(f"Vacancy elements did not load in time.")
-                break
+                pagenum += 1
+                continue
             except Exception as e:
                 print(f"An error occurred while waiting for page load: {e}")
+                pagenum += 1
+                continue
+    
+            for va in vac_extracted_list:
+                for vacancy in vacancies:
+                    try:
+                        job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
+                        job_href = job_hyper.get_attribute("href")
+                        job_code = job_href.split('/')[-1]
+                    except NoSuchElementException:
+                        job_code = "No job code given"
+    
+                    if str(va[0]) == str(job_code):
+                        print(f"match found: {va[0]}")
+                        match_index.append(va[1])
+                        
+                print(f"matching found {va[0]} finished")
+    
+            try:
+                driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
+                pagenum += 1
+            except NoSuchElementException:
+                for row_num in match_index:
+                    update = [
+                        (col_occupation, occ_name),
+                        (col_occ_link, occ_url)
+                    ]
+                    batch_update_cells(va_sheet, row_num, update)
+                    time.sleep(3)
+                progress["RowNum"] += 1
+                break
+            except Exception as e:
+                print(f"An error occurred while finding next button: {e}")
+                progress["RowNum"] += 1
                 break
 
-            for vacancy in vacancies:
-                try:
-                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
-                    job_href = job_hyper.get_attribute("href")
-                    job_code = job_href.split('/')[-1]
-                except NoSuchElementException:
-                    job_code = "No job code given"
-
-                if str(va[0]) == str(job_code):
-                    print(f"match found: {va[0]}")
-                    match_index.append(va[1])
-                    
-            print("matching found finished")
-            for row_num in match_index:
-                update = [
-                    (col_occupation, occ_name),
-                    (col_occ_link, occ_url)
-                ]
-                batch_update_cells(va_sheet, row_num, update)
-                time.sleep(3)
-
-        try:
-            driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-        except NoSuchElementException:
-            progress["progress"] = "finished"
-            ph.save_progress(progress)
-            print("Finished scrapping")
-            break
-        except Exception as e:
-            print(f"An error occurred while finding next button: {e}")
-            break
-
+        progress["progress"] = "finished"
+        ph.save_progress(progress)
+        print("Finished scrapping")
+    
     progress_sheet.update("A5", [[json.dumps({"progress": "setting", "RowNum": 0})]])
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
