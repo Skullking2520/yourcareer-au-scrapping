@@ -189,9 +189,7 @@ def main():
                 progress["RowNum"] += 1
                 break
 
-        progress["progress"] = "finished"
         ph.save_progress(progress)
-        print("Finished scrapping")
 
     progress_sheet.update("A5", [[json.dumps({"progress": "setting", "RowNum": 0})]])
     driver.quit()
