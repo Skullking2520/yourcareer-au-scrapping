@@ -15,6 +15,7 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
+
 def append_row_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
         try:
@@ -22,10 +23,11 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
             return
         except gspread.exceptions.APIError as e:
             if any(code in str(e) for code in ["500", "502", "503", "504"]) or isinstance(e, ReadTimeout):
-                print(f"Error occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
+                print(f"Error occurred. Retry after {delay} seconds ({attempt + 1}/{retries})")
                 time.sleep(delay)
             else:
                 raise
+
 
 def wait_for_page_load(wait_driver, timeout=15):
     try:
@@ -36,6 +38,7 @@ def wait_for_page_load(wait_driver, timeout=15):
         print("Page loading timeout.")
     except Exception as e:
         print(f"An error occurred while waiting for page load: {e}")
+
 
 def extract_occupation():
     # extract occupation link, title, vacancy link
@@ -60,13 +63,13 @@ def extract_occupation():
         occupation_list.append([occupation, occupation_link, vacancies_url])
     return occupation_list
 
+
 def extract_vacancy():
     va_sheet = web_sheet.get_worksheet("Vacancies")
     va_header = va_sheet.row_values(1)
 
     try:
         job_code_index = va_header.index("job code") + 1
-        occupation_index = va_header.index("occupation") + 1
     except ValueError:
         return
 
@@ -75,35 +78,25 @@ def extract_vacancy():
 
     for row_num, row in enumerate(rows[1:], start=2):
         job_code = row[job_code_index - 1] if len(row) >= job_code_index else ""
-        occ_ori = row[occupation_index - 1] if len(row) >= occupation_index else ""
         vacancy_list.append([job_code, row_num])
     return vacancy_list
 
-def batch_update_cells(worksheet, row_num, updates):
-    sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
-    requests = []
 
-    for col, value in updates:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": row_num - 1,
-                    "endRowIndex": row_num,
-                    "startColumnIndex": col - 1,
-                    "endColumnIndex": col
-                },
-                "rows": [{
-                    "values": [{
-                        "userEnteredValue": {"stringValue": str(value)}
-                    }]
-                }],
-                "fields": "userEnteredValue"
-            }
-        })
+def update_cells_append_batch(worksheet, row_indices, col, new_value):
+    if not row_indices:
+        return
 
-    body = {"requests": requests}
-    worksheet.spreadsheet.batch_update(body)
+    min_row, max_row = min(row_indices), max(row_indices)
+    cell_range = worksheet.range(min_row, col, max_row, col)
+
+    for cell in cell_range:
+        if cell.row in row_indices:
+            current_value = cell.value or ""
+            existing = set(item.strip() for item in current_value.split(",")) if current_value else set()
+            if new_value not in existing:
+                cell.value = current_value + ("," if current_value else "") + new_value
+    worksheet.update_cells(cell_range)
+
 
 def main():
     wait = WebDriverWait(driver, 10)
@@ -126,7 +119,6 @@ def main():
         driver.quit()
         return
 
-    print("starting loop: progress =", progress, ", RowNum =", progress["RowNum"])
     while progress["RowNum"] < len(occ_extracted_list):
         print("starting inner loop: progress =", progress, ", RowNum =", progress["RowNum"])
         progress["progress"] = "processing"
@@ -135,65 +127,62 @@ def main():
         occ_url = occ_data[1]
         raw_va_url = occ_data[2]
         va_url = str(raw_va_url) + "&pageNumber="
-        
-        pagenum = 0
+
+        pagenum = 1
+        match_index = []
         while True:
-            print(f"[main] Before driver.get - Processing Row {progress['RowNum']}: {occ_name}")
             try:
-                print(f"[main] Calling driver.get({va_url+ str(pagenum)})")
                 driver.get(va_url + str(pagenum))
-                print("[main] After driver.get")
             except Exception:
-                print(f"Failed to load page: {occ_name}")
+                print(f"Failed to load page {pagenum}, skipping...")
                 progress["RowNum"] += 1
                 break
-                
-            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-            print("[main] Before wait_for_page_load")
-            wait_for_page_load(driver)
-            print("[main] After wait_for_page_load - current page:", occ_name)
-    
-            match_index = []
 
-            try:
-                vacancies = wait.until(EC.presence_of_all_elements_located(
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            wait_for_page_load(driver)
+            print(f"current page: {pagenum}")
+
+            for attempt in range(3):
+                try:
+                    vacancies = wait.until(EC.presence_of_all_elements_located(
                         (By.CSS_SELECTOR, "section.mint-search-result-item.has-img.has-actions.has-preheading")))
-            except TimeoutException:
-                print(f"Vacancy elements did not load in time.")
+                    break
+                except TimeoutException:
+                    print(f"Vacancy elements did not load in time. Attempt {attempt + 1}")
+                except Exception as e:
+                    print(f"An error occurred while waiting for page load: {e}. Attempt {attempt + 1}")
+            else:
                 pagenum += 1
+                print(f"Vacancy elements did not load in time. Skipping page {pagenum}")
                 continue
-            except Exception as e:
-                print(f"An error occurred while waiting for page load: {e}")
-                pagenum += 1
-                continue
-    
-            for va in vac_extracted_list:
-                for vacancy in vacancies:
-                    try:
-                        job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
-                        job_href = job_hyper.get_attribute("href")
-                        job_code = job_href.split('/')[-1]
-                    except NoSuchElementException:
-                        job_code = "No job code given"
-    
-                    if str(va[0]) == str(job_code):
-                        print(f"match found: {va[0]}")
-                        match_index.append(va[1])
-    
+
+            vacancy_dict = {str(va[0]): va[1] for va in vac_extracted_list}
+
+            for vacancy in vacancies:
+                try:
+                    job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
+                    job_href = job_hyper.get_attribute("href")
+                    job_code = job_href.split('/')[-1]
+                except NoSuchElementException:
+                    job_code = "NA"
+
+                if job_code in vacancy_dict:
+                    print(f"match found: {job_code}")
+                    match_index.append(vacancy_dict[job_code])
+
+            print(f"Finished matching for page {pagenum}, occupation {occ_name}")
+
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
                 pagenum += 1
             except NoSuchElementException:
-                for row_num in match_index:
-                    update = [
-                        (col_occupation, occ_name),
-                        (col_occ_link, occ_url)
-                    ]
-                    batch_update_cells(va_sheet, row_num, update)
-                    time.sleep(3)
-                    
-                print(f"matching found {occ_name} finished")
+                print("Applying to vacancy form")
+                update_cells_append_batch(va_sheet, match_index, col_occupation, occ_name)
+                update_cells_append_batch(va_sheet, match_index, col_occ_link, occ_url)
+                time.sleep(3)
+                print(f"{occ_name} matching finished, proceeding to next occupation")
                 progress["RowNum"] += 1
+                match_index = []
                 break
             except Exception as e:
                 print(f"An error occurred while finding next button: {e}")
@@ -203,7 +192,7 @@ def main():
         progress["progress"] = "finished"
         ph.save_progress(progress)
         print("Finished scrapping")
-    
+
     progress_sheet.update("A5", [[json.dumps({"progress": "setting", "RowNum": 0})]])
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
