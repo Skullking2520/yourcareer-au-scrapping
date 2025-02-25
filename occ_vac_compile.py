@@ -179,8 +179,6 @@ def main():
                     if str(va[0]) == str(job_code):
                         print(f"match found: {va[0]}")
                         match_index.append(va[1])
-                        
-                print(f"matching found {va[0]} finished")
     
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
@@ -193,6 +191,8 @@ def main():
                     ]
                     batch_update_cells(va_sheet, row_num, update)
                     time.sleep(3)
+                    
+                print(f"matching found {occ_name} finished")
                 progress["RowNum"] += 1
                 break
             except Exception as e:
