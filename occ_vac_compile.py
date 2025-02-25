@@ -140,7 +140,7 @@ def main():
         while True:
             print(f"[main] Before driver.get - Processing Row {progress['RowNum']}: {occ_name}")
             try:
-                print(f"[main] Calling driver.get({va_url})")
+                print(f"[main] Calling driver.get({va_url+ str(pagenum)})")
                 driver.get(va_url + str(pagenum))
                 print("[main] After driver.get")
             except Exception:
