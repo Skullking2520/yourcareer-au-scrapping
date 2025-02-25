@@ -200,6 +200,9 @@ jobs:
     needs: 
       - run-occ-datail-scraping
       - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
     runs-on: ubuntu-latest
     
     steps:
