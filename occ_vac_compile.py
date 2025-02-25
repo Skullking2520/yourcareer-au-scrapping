@@ -165,10 +165,7 @@ def main():
                     job_code = "NA"
 
                 if job_code in vacancy_dict:
-                    print(f"match found: {job_code}")
                     match_index.append(vacancy_dict[job_code])
-
-            print(f"Finished matching for page {pagenum}, occupation {occ_name}")
 
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
