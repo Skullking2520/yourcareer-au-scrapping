@@ -144,7 +144,7 @@ def main():
                     skills_text = "Failed to load detail page"
                     aat = "Failed to load detail page"
                     print(f"Failed to find {occupation_name} link. Skipping...")
-                    progress["RowNum"] += 10
+                    progress["RowNum"] += 5
                 else:
                     driver.get(url)
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -283,7 +283,7 @@ def main():
                                      (col_overview_dtd, dtd)]
                 pending_updates.append((row_num, updates))
                 time.sleep(3)
-                progress["RowNum"] += 10
+                progress["RowNum"] += 5
                 if len(pending_updates) >= 20:
                     batch_update_multiple_rows(occ_sheet, pending_updates)
                     pending_updates = []
