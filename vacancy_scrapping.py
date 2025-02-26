@@ -17,10 +17,10 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
-def append_row_with_retry(worksheet, data, retries=3, delay=5):
+def append_rows_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
         try:
-            worksheet.append_row(data, value_input_option="USER_ENTERED")
+            worksheet.append_rows(data, value_input_option="USER_ENTERED")
             return
         except gspread.exceptions.APIError as e:
             if any(code in str(e) for code in ["500", "502", "503", "504","429"]) or isinstance(e, ReadTimeout):
@@ -103,6 +103,8 @@ def main():
         set_vacancy_data_sheet()
     url_num = progress.get("UrlNum", 1)
     vac_sheet.update([["Running Scrapping"]], "Q1")
+
+    buffer = []
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
@@ -173,10 +175,18 @@ def main():
                                 "",
                                 ""
                 ]
-                append_row_with_retry(vac_sheet, vacancy_data)
+                buffer.append(vacancy_data)
                 seen_jobs.add(job_code)
                 time.sleep(1)
+                
+                if len(buffer) >= 20:
+                    append_rows_with_retry(vac_sheet, buffer)
+                    buffer = []
 
+            if buffer:
+                append_rows_with_retry(vac_sheet, buffer)
+                buffer = []
+                
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
             except NoSuchElementException:
