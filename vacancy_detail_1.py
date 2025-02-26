@@ -122,7 +122,7 @@ def main():
                     closes = "Failed to load detail page"
                     job_description = "Failed to load detail page"
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
-                    progress["RowNum"] += 2
+                    progress["RowNum"] += 10
                 else:
                     max_retries = 3
                     loaded = False
@@ -247,7 +247,7 @@ def main():
                 ]
                 pending_updates.append((row_num, va_data))
                 time.sleep(3)
-                progress["RowNum"] += 4
+                progress["RowNum"] += 10
                 if len(pending_updates) >= 20:
                     batch_update_multiple_rows(va_sheet, pending_updates)
                     pending_updates = []
