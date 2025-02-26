@@ -145,11 +145,11 @@ def main():
                     else:
                         date_added_dif = 1
                     today = datetime.date.today()
-                    date_added = today - datetime.timedelta(days=date_added_dif)
+                    date_added = (today - datetime.timedelta(days=date_added_dif)).strftime("%B %d, %Y")
                 except NoSuchElementException:
                     date_added = "No date added given"
 
-                time_scrapped = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+                time_scrapped = datetime.datetime.now().strftime("%B %d, %Y %I:%M %p")
 
                 try:
                     overview = vacancy.find_element(By.CSS_SELECTOR, "div.mint-blurb").text
