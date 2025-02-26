@@ -27,20 +27,7 @@ def append_rows_with_retry(worksheet, data, retries=3, delay=5):
                 delay *= 2
             else:
                 print(f"Failed to append rows {data} after {retries} attempts.")
-                returndef append_rows_with_retry(worksheet, data, retries=3, delay=5):
-    for attempt in range(retries):
-        try:
-            worksheet.append_rows(data, value_input_option="USER_ENTERED")
-            return
-        except gspread.exceptions.APIError as e:
-            if any(code in str(e) for code in ["500", "502", "503", "504", "429"]):
-                print(f"Error occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
-                time.sleep(delay)
-                delay *= 2
-            else:
-                print(f"Failed to append rows {data} after {retries} attempts.")
                 return
-
 def set_occ_sheet():
     worksheet = web_sheet.get_worksheet("Occupation")
     worksheet.clear()
