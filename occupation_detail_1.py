@@ -61,45 +61,42 @@ def overview_to_skills(link):
     modified_link = re.sub(r"(\?|&)tab=overview", r"\1tab=skills", link)
     return modified_link
 
-def retry_batch_update(spreadsheet, body, retries=3, delay=5):
-    """batch_update 호출 시 500 내부 오류 발생 시 재시도하는 함수"""
+def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
+    sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
+    requests = []
+    for row_num, updates in updates_list:
+        for col, value in updates:
+            requests.append({
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": row_num - 1,
+                        "endRowIndex": row_num,
+                        "startColumnIndex": col - 1,
+                        "endColumnIndex": col
+                    },
+                    "rows": [{
+                        "values": [{
+                            "userEnteredValue": {"stringValue": str(value)}
+                        }]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            })
+    body = {"requests": requests}
+
     for attempt in range(retries):
         try:
-            return spreadsheet.batch_update(body)
+            worksheet.spreadsheet.batch_update(body)
+            return
         except gspread.exceptions.APIError as e:
-            if "500" in str(e) or "Internal" in str(e) or isinstance(e, ReadTimeout):
-                print(f"Internal error encountered: {e}. Retrying in {delay} seconds... (attempt {attempt+1}/{retries})")
+            any(code in str(e) for code in ["500", "502", "503", "504"])
+                print(f"API Error ({error_message}). Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
             else:
                 raise
-    raise Exception("Batch update failed after multiple retries.")
-
-def batch_update_cells(worksheet, row_num, updates):
-    sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
-    requests_list = []
-
-    for col, value in updates:
-        requests_list.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": row_num - 1,
-                    "endRowIndex": row_num,
-                    "startColumnIndex": col - 1,
-                    "endColumnIndex": col
-                },
-                "rows": [{
-                    "values": [{
-                        "userEnteredValue": {"stringValue": str(value)}
-                    }]
-                }],
-                "fields": "userEnteredValue"
-            }
-        })
-
-    body = {"requests": requests_list}
-    retry_batch_update(worksheet.spreadsheet, body)
+    print("Failed to update cells after several attempts.")
 
 def main():
     occ_sheet = web_sheet.get_worksheet("Occupation")
@@ -124,7 +121,7 @@ def main():
     except ValueError:
         print("Column not in sheet")
         return
-
+    pending_updates = []
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
@@ -147,7 +144,7 @@ def main():
                     skills_text = "Failed to load detail page"
                     aat = "Failed to load detail page"
                     print(f"Failed to find {occupation_name} link. Skipping...")
-                    progress["RowNum"] += 1
+                    progress["RowNum"] += 10
                 else:
                     driver.get(url)
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -284,9 +281,16 @@ def main():
                                      (col_overview_interests, overview_interests_text),
                                      (col_overview_considerations, overview_considerations_text),
                                      (col_overview_dtd, dtd)]
-                batch_update_cells(occ_sheet, row_num, updates)
+                pending_updates.append((row_num, updates))
                 time.sleep(3)
-                progress["RowNum"] += 1
+                progress["RowNum"] += 10
+                if len(pending_updates) >= 20:
+                    batch_update_multiple_rows(occ_sheet, pending_updates)
+                    pending_updates = []
+
+            if pending_updates:
+                batch_update_multiple_rows(occ_sheet, pending_updates)
+                pending_updates = []
             progress["progress"] = "finished"
         except NoSuchElementException as e:
             print(f"Error processing detail: {e}")
