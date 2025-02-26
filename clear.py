@@ -25,5 +25,10 @@ def main():
     progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 5})]], range_name="F4")
     progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 6})]], range_name="G4")
     progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 7})]], range_name="H4")
+    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 0})]], range_name="A5")
+    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 1})]], range_name="B5")
+    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 2})]], range_name="C5")
+    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 3})]], range_name="D5")
+    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 4})]], range_name="E5")
 if __name__ == "__main__":
     main()
