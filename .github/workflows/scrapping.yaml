@@ -1,12 +1,12 @@
 name: Run occ_vac project
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-#   schedule:
-#     - cron: '0 15 * * *'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * *'
 
 jobs:
   run-occupation-scraping:
