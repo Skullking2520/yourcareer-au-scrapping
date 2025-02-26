@@ -1,12 +1,12 @@
 name: Run occ_vac project
 
-# on:
-  # push:
-  #   branches:
-  #     - main
-  # workflow_dispatch:
-  # schedule:
-  #   - cron: '0 15 * * *'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * *'
 
 jobs:
   run-occupation-scraping:
@@ -323,6 +323,80 @@ jobs:
       run: |
         python vacancy_detail_5.py
         
+  run-vac-detail-scraping-6:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_6.py
+        
+  run-vac-detail-scraping-7:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_7.py
+        
+  run-vac-detail-scraping-8:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_8.py
   run-occ-vac-compile-1:
     needs: 
       - run-occ-datail-scraping-1
@@ -335,6 +409,9 @@ jobs:
       - run-vac-detail-scraping-3
       - run-vac-detail-scraping-4
       - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
     runs-on: ubuntu-latest
     
     steps:
@@ -369,6 +446,9 @@ jobs:
       - run-vac-detail-scraping-3
       - run-vac-detail-scraping-4
       - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
     runs-on: ubuntu-latest
     
     steps:
@@ -404,6 +484,9 @@ jobs:
       - run-vac-detail-scraping-3
       - run-vac-detail-scraping-4
       - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
     runs-on: ubuntu-latest
     
     steps:
@@ -439,6 +522,9 @@ jobs:
       - run-vac-detail-scraping-3
       - run-vac-detail-scraping-4
       - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
     runs-on: ubuntu-latest
     
     steps:
@@ -460,8 +546,7 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python occ_vac_compile_4.py
-
-
+        
   run-occ-vac-compile-5:
     needs: 
       - run-occ-datail-scraping-1
@@ -474,6 +559,9 @@ jobs:
       - run-vac-detail-scraping-3
       - run-vac-detail-scraping-4
       - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
     runs-on: ubuntu-latest
     
     steps:
@@ -495,4 +583,34 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python occ_vac_compile_5.py
+
+  run-clear:
+    needs: 
+      - run-occ-vac-compile-1
+      - run-occ-vac-compile-2
+      - run-occ-vac-compile-3
+      - run-occ-vac-compile-4
+      - run-occ-vac-compile-5
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python clear.py
+
 
