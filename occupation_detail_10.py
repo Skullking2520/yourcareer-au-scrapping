@@ -90,7 +90,7 @@ def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
             worksheet.spreadsheet.batch_update(body)
             return
         except gspread.exceptions.APIError as e:
-            if any(code in str(e) for code in ["500", "502", "503", "504"])
+            if any(code in str(e) for code in ["500", "502", "503", "504"]):
                 print(f"API Error ({error_message}). Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
