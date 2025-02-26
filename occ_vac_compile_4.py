@@ -182,10 +182,9 @@ def main():
                 print(f"An error occurred while finding next button: {e}")
                 progress["RowNum"] += 5
                 break
-
+        progress["progress"] = "finished"
         ph.save_progress(progress)
-
-    progress_sheet.update("D5", [[json.dumps({"progress": "setting", "RowNum": 3})]])
+        
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
