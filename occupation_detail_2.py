@@ -292,12 +292,10 @@ def main():
                 batch_update_multiple_rows(occ_sheet, pending_updates)
                 pending_updates = []
             progress["progress"] = "finished"
+            ph.save_progress(progress)
         except NoSuchElementException as e:
             print(f"Error processing detail: {e}")
             continue
-
-    progress_sheet.update(values=[[json.dumps({"progress": "setting", "RowNum": 1})]], range_name="B2")
-    occ_sheet.update([["Scrapping Finished"]], "R1")
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
 
