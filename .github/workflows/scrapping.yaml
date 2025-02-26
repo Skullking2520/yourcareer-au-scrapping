@@ -47,7 +47,7 @@ jobs:
       run: |
         python occupation_scrapping.py
         
-  run-occ-datail-scraping:
+  run-occ-datail-scraping-1:
     needs: 
       - run-occupation-scraping
     runs-on: ubuntu-latest
@@ -70,7 +70,232 @@ jobs:
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
-        python occupation_detail.py
+        python occupation_detail_1.py
+        
+  run-occ-datail-scraping-2:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_2.py
+        
+  run-occ-datail-scraping-3:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_3.py
+        
+  run-occ-datail-scraping-4:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_4.py
+        
+  run-occ-datail-scraping-5:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_5.py
+        
+  run-occ-datail-scraping-6:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_6.py
+        
+  run-occ-datail-scraping-7:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_7.py
+        
+  run-occ-datail-scraping-8:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_8.py
+        
+  run-occ-datail-scraping-9:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_9.py
+        
+  run-occ-datail-scraping-10:
+    needs: 
+      - run-occupation-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run Occupation Detail Scraping
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occupation_detail_10.py
 
   run-vacancy-scraping:
     runs-on: ubuntu-latest
@@ -195,14 +420,10 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python vacancy_detail_4.py
-
-  run-occ-vac-compile:
+        
+  run-vac-detail-scraping-5:
     needs: 
-      - run-occ-datail-scraping
-      - run-vac-detail-scraping-1
-      - run-vac-detail-scraping-2
-      - run-vac-detail-scraping-3
-      - run-vac-detail-scraping-4
+      - run-vacancy-scraping
     runs-on: ubuntu-latest
     
     steps:
@@ -223,4 +444,1027 @@ jobs:
       env:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
-        python occ_vac_compile.py
+        python vacancy_detail_5.py
+        
+  run-vac-detail-scraping-6:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_6.py
+        
+  run-vac-detail-scraping-7:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_7.py
+        
+  run-vac-detail-scraping-8:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_8.py
+        
+  run-vac-detail-scraping-9:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_9.py
+        
+  run-vac-detail-scraping-10:
+    needs: 
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python vacancy_detail_10.py
+        
+  run-occ-vac-compile-1:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_1.py
+        
+  run-occ-vac-compile-2:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_2.py
+
+
+  run-occ-vac-compile-3:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_3.py
+
+
+  run-occ-vac-compile-4:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_4.py
+
+
+  run-occ-vac-compile-5:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_5.py
+
+
+  run-occ-vac-compile-6:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_6.py
+
+
+  run-occ-vac-compile-7:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_7.py
+
+  run-occ-vac-compile-8:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_8.py
+
+
+  run-occ-vac-compile-9:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_9.py
+
+
+  run-occ-vac-compile-10:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_10.py
+
+
+  run-occ-vac-compile-11:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_11.py
+
+
+  run-occ-vac-compile-12:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_12.py
+
+
+  run-occ-vac-compile-13:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_13.py
+
+
+  run-occ-vac-compile-14:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_14.py
+
+
+  run-occ-vac-compile-15:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_15.py
+
+
+  run-occ-vac-compile-16:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_16.py
+
+
+  run-occ-vac-compile-17:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_17.py
+
+
+  run-occ-vac-compile-18:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_18.py
+
+
+  run-occ-vac-compile-19:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_19.py
+
+
+  run-occ-vac-compile-20:
+    needs: 
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-occ-datail-scraping-6
+      - run-occ-datail-scraping-7
+      - run-occ-datail-scraping-8
+      - run-occ-datail-scraping-9
+      - run-occ-datail-scraping-10
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Run occ_vac compiling
+      env:
+        SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+      run: |
+        python occ_vac_compile_20.py
+
