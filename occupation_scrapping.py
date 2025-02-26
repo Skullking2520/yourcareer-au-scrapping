@@ -134,7 +134,7 @@ def main():
             except Exception as e:
                 print(f"An error occurred while waiting for page load: {e}")
                 break
-
+            buffer = [] 
             for occupation in occupations:
 
                 # find link to vacancies
@@ -207,9 +207,14 @@ def main():
                     "", # overview : considerations
                     "" # overview : day-to-day
                 ]
-                append_row_with_retry(occ_sheet, occupation_data)
+                buffer.append(occupation_data)
                 seen_jobs.add(occupation_code)
+                if len(buffer) == 20:
+                    append_row_with_retry(occ_sheet, buffer, retries=3, delay=5)
+                    buffer = []
                 time.sleep(1)
+            if buffer:
+                append_row_with_retry(occ_sheet, buffer, retries=3, delay=5)
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
             except NoSuchElementException:
