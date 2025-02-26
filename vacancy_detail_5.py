@@ -87,7 +87,7 @@ def main():
     va_sheet = web_sheet.get_worksheet("Vacancies")
     progress_sheet = web_sheet.get_worksheet("Progress")
     extracted_list = extract()
-    ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 3}, "E4")
+    ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 4}, "E4")
     progress = ph.load_progress()
     vac_sheet_header = va_sheet.row_values(1)
     try:
