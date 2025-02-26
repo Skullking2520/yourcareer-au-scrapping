@@ -15,18 +15,30 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
-def append_row_with_retry(worksheet, data, retries=3, delay=5):
+def append_rows_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
         try:
-            worksheet.append_row(data, value_input_option="USER_ENTERED")
+            worksheet.append_rows(data, value_input_option="USER_ENTERED")
             return
         except gspread.exceptions.APIError as e:
-            if any(code in str(e) for code in ["500", "502", "503", "504","429"]) or isinstance(e, ReadTimeout):
+            if any(code in str(e) for code in ["500", "502", "503", "504", "429"]):
                 print(f"Error occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
                 time.sleep(delay)
                 delay *= 2
             else:
-                print(f"Failed to append element {data} after {retries} attempts.")
+                print(f"Failed to append rows {data} after {retries} attempts.")
+                returndef append_rows_with_retry(worksheet, data, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            worksheet.append_rows(data, value_input_option="USER_ENTERED")
+            return
+        except gspread.exceptions.APIError as e:
+            if any(code in str(e) for code in ["500", "502", "503", "504", "429"]):
+                print(f"Error occurred. Retry after {delay} seconds ({attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                print(f"Failed to append rows {data} after {retries} attempts.")
                 return
 
 def set_occ_sheet():
@@ -210,11 +222,11 @@ def main():
                 buffer.append(occupation_data)
                 seen_jobs.add(occupation_code)
                 if len(buffer) == 20:
-                    append_row_with_retry(occ_sheet, buffer, retries=3, delay=5)
+                    append_rows_with_retry(occ_sheet, buffer, retries=3, delay=5)
                     buffer = []
                 time.sleep(1)
             if buffer:
-                append_row_with_retry(occ_sheet, buffer, retries=3, delay=5)
+                append_rows_with_retry(occ_sheet, buffer, retries=3, delay=5)
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
             except NoSuchElementException:
