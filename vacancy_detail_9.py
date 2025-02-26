@@ -2,6 +2,7 @@
 import json
 import re
 import time
+import gspread
 
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.common.by import By
@@ -23,7 +24,7 @@ def wait_for_page_load(wait_driver, timeout=15):
         print("Page loading timeout.")
     except Exception as e:
         print(f"An error occurred while waiting for page load: {e}")
-
+        
 def extract():
     # extract from Sheet1
     occ_sheet = web_sheet.get_worksheet("Vacancies")
@@ -44,31 +45,43 @@ def extract():
         link_list.append({"link_row_num":row_num, "detail_url":link})
     return link_list
 
-def batch_update_cells(worksheet, row_num, updates):
+def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
     sheet_id = getattr(worksheet, 'id', None) or worksheet._properties.get('sheetId')
     requests = []
-
-    for col, value in updates:
-        requests.append({
-            "updateCells": {
-                "range": {
-                    "sheetId": sheet_id,
-                    "startRowIndex": row_num - 1,
-                    "endRowIndex": row_num,
-                    "startColumnIndex": col - 1,
-                    "endColumnIndex": col
-                },
-                "rows": [{
-                    "values": [{
-                        "userEnteredValue": {"stringValue": str(value)}
-                    }]
-                }],
-                "fields": "userEnteredValue"
-            }
-        })
-
+    for row_num, updates in updates_list:
+        for col, value in updates:
+            requests.append({
+                "updateCells": {
+                    "range": {
+                        "sheetId": sheet_id,
+                        "startRowIndex": row_num - 1,
+                        "endRowIndex": row_num,
+                        "startColumnIndex": col - 1,
+                        "endColumnIndex": col
+                    },
+                    "rows": [{
+                        "values": [{
+                            "userEnteredValue": {"stringValue": str(value)}
+                        }]
+                    }],
+                    "fields": "userEnteredValue"
+                }
+            })
     body = {"requests": requests}
-    worksheet.spreadsheet.batch_update(body)
+
+    for attempt in range(retries):
+        try:
+            worksheet.spreadsheet.batch_update(body)
+            return
+        except gspread.exceptions.APIError as e:
+            error_message = str(e)
+            if "429" in error_message or "503" in error_message:
+                print(f"API Error ({error_message}). Retrying after {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    print("Failed to update cells after several attempts.")
 
 def main():
     va_sheet = web_sheet.get_worksheet("Vacancies")
@@ -90,7 +103,8 @@ def main():
     except ValueError:
         print("Column not in sheet")
         return
-
+    driver.set_page_load_timeout(120)
+    pending_updates = []
     while not progress["progress"] == "finished":
         try:
             progress["progress"] = "processing"
@@ -110,23 +124,51 @@ def main():
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
                     progress["RowNum"] += 10
                 else:
-                    driver.get(url)
+                    max_retries = 3
+                    loaded = False
+                    for attempt in range(1, max_retries + 1):
+                        try:
+                            print(f"loading page, attempt {attempt}: {url}")
+                            driver.get(url)
+                            loaded = True
+                            break
+                        except TimeoutException:
+                            print(f"Timeout occured in {attempt} attempt: {url}")
+                            if attempt < max_retries:
+                                time.sleep(5)
+                            else:
+                                print("Exceed max retry, skiping page.")
+                                loaded = False
+                    if not loaded:
+                        company = "Failed to load detail page"
+                        salary = "Failed to load detail page"
+                        address = "Failed to load detail page"
+                        va_lat = "Failed to load detail page"
+                        va_long = "Failed to load detail page"
+                        tenure = "Failed to load detail page"
+                        closes = "Failed to load detail page"
+                        job_description = "Failed to load detail page"
+                        progress["RowNum"] += 10
+                        continue
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     wait_for_page_load(driver)
                     print(f"current page: {url}")
 
                     try:
-                        company_elem = WebDriverWait(driver, 10).until(
-                            EC.visibility_of_element_located(
-                                (By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a")
+                        company_element = driver.find_element(By.XPATH, "//p[b[contains(text(), 'Company:')]]")
+                        company_text = company_element.text
+                        company = company_text.replace("Company:", "").strip()
+                    except NoSuchElementException:
+                        try:
+                            company_elem = WebDriverWait(driver, 10).until(
+                                EC.visibility_of_element_located((By.XPATH, "//*[@id='find-a-job']//div[contains(@class, 'text-lg')]//p/a"))
                             )
-                        )
-                        company = company_elem.text
-                    except (NoSuchElementException, TimeoutException):
-                        company = "No company given"
+                            company = company_elem.text.strip()
+                        except (NoSuchElementException, TimeoutException):
+                            company = "No company given"
                     except Exception as e:
                         print(f"An error occurred while finding company data: {e}")
-                        break
+                        company = "No company given"
 
                     try:
                         address = driver.find_element(By.CSS_SELECTOR, "div[class='address-text']").text
@@ -179,7 +221,7 @@ def main():
                         va_map = driver.find_element(By.CSS_SELECTOR, "a[class='custom mint-button secondary direction-btn']")
                         link = va_map.get_attribute("href")
                         driver.get(link)
-                        wait_for_page_load(driver)
+                        WebDriverWait(driver, 30).until(lambda d: "@" in d.current_url)
                         map_url = driver.current_url
                         pattern = r"@(-?\d+\.\d+),(-?\d+\.\d+)"
                         match = re.search(pattern, map_url)
@@ -188,7 +230,8 @@ def main():
                         else:
                             va_lat = "No lat given"
                             va_long = "No long given"
-                    except NoSuchElementException:
+                    except (NoSuchElementException, TimeoutException) as e:
+                        print("Map extraction error:", e)
                         va_lat = "No lat given"
                         va_long = "No long given"
 
@@ -202,20 +245,26 @@ def main():
                         (col_closes, closes),
                         (col_description, job_description)
                 ]
-                batch_update_cells(va_sheet, row_num, va_data)
+                pending_updates.append((row_num, va_data))
                 time.sleep(3)
-                progress["RowNum"] += 1
+                progress["RowNum"] += 10
+                if len(pending_updates) >= 20:
+                    batch_update_multiple_rows(va_sheet, pending_updates)
+                    pending_updates = []
+
+            if pending_updates:
+                batch_update_multiple_rows(va_sheet, pending_updates)
+                pending_updates = []
+                
             progress["progress"] = "finished"
         except NoSuchElementException as e:
             print(f"Error processing detail: {e}")
             continue
 
-    progress_sheet.update("I4", [[json.dumps({"progress": "setting", "RowNum": 8})]])
+    progress_sheet.update([[json.dumps({"progress": "setting", "RowNum": 8})]], "I4")
+    va_sheet.update([["Scrapping Finished"]], "Q1")
     driver.quit()
     print("Saved every data into the Google Sheet successfully.")
-
-    if __name__ == "__main__":
-        main()
 
 if __name__ == "__main__":
     main()
