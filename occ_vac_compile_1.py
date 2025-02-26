@@ -134,7 +134,7 @@ def main():
                 driver.get(va_url + str(pagenum))
             except Exception:
                 print(f"Failed to load page {pagenum}, skipping...")
-                progress["RowNum"] += 1
+                progress["RowNum"] += 20
                 break
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
@@ -175,12 +175,12 @@ def main():
                 update_cells_append_batch(va_sheet, match_index, col_occ_link, occ_url)
                 time.sleep(3)
                 print(f"{occ_name} matching finished, proceeding to next occupation")
-                progress["RowNum"] += 1
+                progress["RowNum"] += 20
                 match_index = []
                 break
             except Exception as e:
                 print(f"An error occurred while finding next button: {e}")
-                progress["RowNum"] += 1
+                progress["RowNum"] += 20
                 break
 
         ph.save_progress(progress)
