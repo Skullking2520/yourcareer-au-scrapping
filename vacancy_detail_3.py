@@ -62,7 +62,19 @@ def extract(va_sheet):
         print("Could not detect requested row", e)
         return []
 
-    all_rows = va_sheet.get_all_values()[1:]
+    for attempt in range(3):
+        try:
+            all_rows = va_sheet.get_all_values()[1:]
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching all values. Retrying in {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch all values after 3 attempts.")
     link_list = []
     for row_num, row in enumerate(all_rows, start=2):
         link = row[link_idx - 1] if len(row) >= link_idx else ""
