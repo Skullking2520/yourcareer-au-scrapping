@@ -410,6 +410,8 @@ jobs:
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
     if: always()
+    outputs:
+      retry: ${{ steps.check_value.outputs.retry }}
     steps:
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -433,7 +435,9 @@ jobs:
           from googleapiclient.discovery import build
 
           credentials_info = json.loads(os.environ["GOOGLE_SHEETS_CREDENTIALS"])
-          credentials = Credentials.from_service_account_info(credentials_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"])
+          credentials = Credentials.from_service_account_info(
+              credentials_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+          )
 
           service = build("sheets", "v4", credentials=credentials)
           sheet = service.spreadsheets()
@@ -446,15 +450,15 @@ jobs:
 
           if values and "finished" in values[0][0].lower():
               echo "Job completed successfully. No need to retry."
-              echo "retry=false" >> "$GITHUB_ENV"
+              echo "retry=false" >> $GITHUB_OUTPUT
           else:
               echo "Trigger word not found. Retrying the job..."
-              echo "retry=true" >> "$GITHUB_ENV"
+              echo "retry=true" >> $GITHUB_OUTPUT
 
   retry_workflow:
     runs-on: ubuntu-latest
     needs: check_google_sheet
-    if: env.retry == 'true'
+    if: needs.check_google_sheet.outputs.retry == 'true'
     steps:
       - name: Trigger New Workflow Run
         run: |
