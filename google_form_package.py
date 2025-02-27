@@ -1,6 +1,6 @@
 # google_form_package.py
 import os  # noqa
-
+import time
 import gspread
 from google.oauth2.service_account import Credentials
 from selenium import webdriver
@@ -22,7 +22,21 @@ class Sheet:
         credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
         gc = gspread.authorize(credentials)
         spreadsheet_url = "https://docs.google.com/spreadsheets/d/13fIG9eUVVH1OKkQ6CaaTNSr1Cb8eUg-qCNXxm9m7eu0/edit?gid=0#gid=0"
-        self.spreadsheet = gc.open_by_url(spreadsheet_url)
+        retries = 3
+        delay = 5
+        for attempt in range(retries):
+            try:
+                self.spreadsheet = gc.open_by_url(spreadsheet_url)
+                break
+            except gspread.exceptions.APIError as e:
+                if "429" in str(e):
+                    print(f"Quota exceeded when opening spreadsheet. Retrying in {delay} seconds (Attempt {attempt+1}/{retries})")
+                    time.sleep(delay)
+                    delay *= 2
+                else:
+                    raise
+        else:
+            raise Exception("Failed to open spreadsheet after multiple attempts due to quota limits.")
 
     @staticmethod
     def set_driver():
