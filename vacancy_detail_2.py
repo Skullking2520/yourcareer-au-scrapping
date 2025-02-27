@@ -268,7 +268,7 @@ def main():
                 progress["RowNum"] += 8
                 if len(pending_updates) >= 20:
                     batch_update_multiple_rows(va_sheet, pending_updates)
-                    ph.save_progress(progress)
+                    progress_sheet.update(values=[[json.dumps({"progress": "processing", "RowNum": progress["RowNum"]})]], range_name="B4")
                     pending_updates = []
 
             if pending_updates:
