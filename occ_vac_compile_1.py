@@ -15,6 +15,19 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
+def get_worksheet_with_retry(sheet_name, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            ws = web_sheet.get_worksheet(sheet_name)
+            return ws
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error for {sheet_name}. Retrying in {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    raise Exception(f"Failed to get worksheet {sheet_name} after {retries} attempts.")
 
 def append_row_with_retry(worksheet, data, retries=3, delay=5):
     for attempt in range(retries):
@@ -27,7 +40,6 @@ def append_row_with_retry(worksheet, data, retries=3, delay=5):
                 time.sleep(delay)
             else:
                 raise
-
 
 def wait_for_page_load(wait_driver, timeout=15):
     try:
@@ -42,8 +54,21 @@ def wait_for_page_load(wait_driver, timeout=15):
 
 def extract_occupation():
     # extract occupation link, title, vacancy link
-    oc_sheet = web_sheet.get_worksheet("Occupation")
-    oc_header = oc_sheet.row_values(1)
+    oc_sheet = get_worksheet_with_retry("Occupation")
+    delay = 5
+    for attempt in range(3):
+        try:
+            oc_header = oc_sheet.row_values(1)
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching row 1. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch header after 3 attempts.")
     try:
         occupation_idx = oc_header.index("occupation") + 1
         occupation_link_idx = oc_header.index("occupation link") + 1
@@ -52,7 +77,19 @@ def extract_occupation():
         print("Could not detect requested row", e)
         return
 
-    all_rows = oc_sheet.get_all_values()[1:]
+    for attempt in range(3):
+        try:
+            all_rows = oc_sheet.get_all_values()[1:]
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching all values. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch all values after 3 attempts.")
 
     occupation_list = []
 
@@ -66,14 +103,39 @@ def extract_occupation():
 
 def extract_vacancy():
     va_sheet = web_sheet.get_worksheet("Vacancies")
-    va_header = va_sheet.row_values(1)
+    delay = 5
+    for attempt in range(3):
+        try:
+            va_header = va_sheet.row_values(1)
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching row 1 from Vacancies. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch vacancy header after 3 attempts.")
 
     try:
         job_code_index = va_header.index("job code") + 1
     except ValueError:
         return
 
-    rows = va_sheet.get_all_values()
+    for attempt in range(3):
+        try:
+            rows = va_sheet.get_all_values()
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching all values from Vacancies. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch vacancy data after 3 attempts.")
     vacancy_list = []
 
     for row_num, row in enumerate(rows[1:], start=2):
@@ -95,13 +157,26 @@ def update_cells_append_batch(worksheet, row_indices, col, new_value):
             existing = set(item.strip() for item in current_value.split(",")) if current_value else set()
             if new_value not in existing:
                 cell.value = current_value + ("," if current_value else "") + new_value
-    worksheet.update_cells(cell_range)
+    delay = 5
+    for attempt in range(3):
+        try:
+            worksheet.update_cells(cell_range)
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Write quota error when updating cells. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        print("Failed to update cells after several attempts.")
 
 
 def main():
     wait = WebDriverWait(driver, 10)
-    va_sheet = web_sheet.get_worksheet("Vacancies")
-    progress_sheet = web_sheet.get_worksheet("Progress")
+    va_sheet = get_worksheet_with_retry("Vacancies")
+    progress_sheet = get_worksheet_with_retry("Progress")
     ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 0}, "A5")
     progress = ph.load_progress()
     occ_extracted_list = extract_occupation()
