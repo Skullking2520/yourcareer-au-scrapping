@@ -40,13 +40,28 @@ def wait_for_page_load(wait_driver, timeout=15):
         print(f"An error occurred while waiting for page load: {e}")
         
 def extract(va_sheet):
-    # extract detail URLs
-    va_sheet_header = va_sheet.row_values(1)
+    retries = 3
+    delay = 5
+    for attempt in range(retries):
+        try:
+            va_sheet_header = va_sheet.row_values(1)
+            break
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error when fetching header. Retrying in {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    else:
+        raise Exception("Failed to fetch worksheet header after multiple attempts.")
+
     try:
         link_idx = va_sheet_header.index("job link") + 1
     except ValueError as e:
         print("Could not detect requested row", e)
         return []
+
     all_rows = va_sheet.get_all_values()[1:]
     link_list = []
     for row_num, row in enumerate(all_rows, start=2):
