@@ -1,12 +1,12 @@
 name: Run occ_vac project
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-#   schedule:
-#     - cron: '0 15 * * *'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * *'
 
 jobs:
   run-occupation-scraping:
@@ -397,6 +397,72 @@ jobs:
         SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
       run: |
         python vacancy_detail_8.py
+
+  check_google_sheet:
+    runs-on: ubuntu-latest
+    needs:
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+    if: always()
+    steps:
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install Dependencies
+        run: pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
+
+      - name: Check Google Sheet Value
+        id: check_value
+        env:
+          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
+          SHEET_NAME: "Progress"
+          RANGE: "A4"
+        run: |
+          import json
+          import os
+          from google.oauth2.service_account import Credentials
+          from googleapiclient.discovery import build
+
+          credentials_info = json.loads(os.environ["GOOGLE_SHEETS_CREDENTIALS"])
+          credentials = Credentials.from_service_account_info(credentials_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"])
+
+          service = build("sheets", "v4", credentials=credentials)
+          sheet = service.spreadsheets()
+
+          SPREADSHEET_ID = os.environ["SPREADSHEET_ID"]
+          SHEET_NAME = os.environ["SHEET_NAME"]
+          RANGE = f"{SHEET_NAME}!{os.environ['RANGE']}"
+          result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE).execute()
+          values = result.get("values", [])
+
+          if values and "finished" in values[0][0].lower():
+              echo "Job completed successfully. No need to retry."
+              echo "retry=false" >> "$GITHUB_ENV"
+          else:
+              echo "Trigger word not found. Retrying the job..."
+              echo "retry=true" >> "$GITHUB_ENV"
+
+  retry_workflow:
+    runs-on: ubuntu-latest
+    needs: check_google_sheet
+    if: env.retry == 'true'
+    steps:
+      - name: Trigger New Workflow Run
+        run: |
+          curl -X POST -H "Accept: application/vnd.github.v3+json" \
+               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               https://api.github.com/repos/Skullking2520/yourcareer-au-scrapping/actions/workflows/scrapping.yaml/dispatches \
+               -d '{"ref":"main"}'
+               
   run-occ-vac-compile-1:
     needs: 
       - run-occ-datail-scraping-1
