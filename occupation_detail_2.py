@@ -16,6 +16,20 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
+def get_worksheet_with_retry(sheet_name, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            ws = web_sheet.get_worksheet(sheet_name)
+            return ws
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error for {sheet_name}. Retrying in {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    raise Exception(f"Failed to get worksheet {sheet_name} after {retries} attempts.")
+    
 def wait_for_page_load(wait_driver, timeout=15):
     try:
         WebDriverWait(wait_driver, timeout).until(
@@ -35,9 +49,8 @@ def remove_hyperlink(cell_value):
             return match.group(1)
     return cell_value
 
-def extract():
+def extract(occ_sheet):
     # extract from Sheet1
-    occ_sheet = web_sheet.get_worksheet("Occupation")
     occ_sheet_header = occ_sheet.row_values(1)
     try:
         link_idx = occ_sheet_header.index("occupation link") + 1
@@ -99,9 +112,9 @@ def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
     print("Failed to update cells after several attempts.")
 
 def main():
-    occ_sheet = web_sheet.get_worksheet("Occupation")
-    progress_sheet = web_sheet.get_worksheet("Progress")
-    extracted_list = extract()
+    occ_sheet = get_worksheet_with_retry("Occupation")
+    progress_sheet = get_worksheet_with_retry("Progress")
+    extracted_list = extract(occ_sheet)
     ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 1}, "B2")
     progress = ph.load_progress()
     occ_sheet_header = occ_sheet.row_values(1)
