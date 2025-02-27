@@ -95,9 +95,9 @@ def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
     print("Failed to update cells after several attempts.")
 
 def main():
-    va_sheet = web_sheet.get_worksheet("Vacancies")
-    progress_sheet = web_sheet.get_worksheet("Progress")
-    extracted_list = extract()
+    va_sheet = get_worksheet_with_retry("Vacancies")
+    progress_sheet = get_worksheet_with_retry("Progress")
+    extracted_list = extract(va_sheet)
     ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 2}, "C4")
     progress = ph.load_progress()
     vac_sheet_header = va_sheet.row_values(1)
