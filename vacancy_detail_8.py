@@ -15,6 +15,20 @@ from process_handler import ProcessHandler
 web_sheet = Sheet()
 driver = web_sheet.set_driver()
 
+def get_worksheet_with_retry(sheet_name, retries=3, delay=5):
+    for attempt in range(retries):
+        try:
+            ws = web_sheet.get_worksheet(sheet_name)
+            return ws
+        except gspread.exceptions.APIError as e:
+            if "429" in str(e):
+                print(f"Read quota error for {sheet_name}. Retrying in {delay} seconds... (Attempt {attempt+1}/{retries})")
+                time.sleep(delay)
+                delay *= 2
+            else:
+                raise
+    raise Exception(f"Failed to get worksheet {sheet_name} after {retries} attempts.")
+
 def wait_for_page_load(wait_driver, timeout=15):
     try:
         WebDriverWait(wait_driver, timeout).until(
@@ -25,24 +39,21 @@ def wait_for_page_load(wait_driver, timeout=15):
     except Exception as e:
         print(f"An error occurred while waiting for page load: {e}")
         
-def extract():
-    # extract from Sheet1
-    occ_sheet = web_sheet.get_worksheet("Vacancies")
-    occ_sheet_header = occ_sheet.row_values(1)
+def extract(va_sheet):
+    # extract detail URLs
+    va_sheet_header = va_sheet.row_values(1)
     try:
-        link_idx = occ_sheet_header.index("job link") + 1
+        link_idx = va_sheet_header.index("job link") + 1
     except ValueError as e:
         print("Could not detect requested row", e)
-        return
-
-    all_rows = occ_sheet.get_all_values()[1:]
+        return []
+    all_rows = va_sheet.get_all_values()[1:]
     link_list = []
-
     for row_num, row in enumerate(all_rows, start=2):
         link = row[link_idx - 1] if len(row) >= link_idx else ""
         if not link:
             break
-        link_list.append({"link_row_num":row_num, "detail_url":link})
+        link_list.append({"link_row_num": row_num, "detail_url": link})
     return link_list
 
 def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
@@ -84,9 +95,9 @@ def batch_update_multiple_rows(worksheet, updates_list, retries=3, delay=10):
     print("Failed to update cells after several attempts.")
 
 def main():
-    va_sheet = web_sheet.get_worksheet("Vacancies")
-    progress_sheet = web_sheet.get_worksheet("Progress")
-    extracted_list = extract()
+    va_sheet = get_worksheet_with_retry("Vacancies")
+    progress_sheet = get_worksheet_with_retry("Progress")
+    extracted_list = extract(va_sheet)
     ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 7}, "H4")
     progress = ph.load_progress()
     vac_sheet_header = va_sheet.row_values(1)
@@ -250,6 +261,7 @@ def main():
                 progress["RowNum"] += 8
                 if len(pending_updates) >= 20:
                     batch_update_multiple_rows(va_sheet, pending_updates)
+                    ph.save_progress(progress)
                     pending_updates = []
 
             if pending_updates:
