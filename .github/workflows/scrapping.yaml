@@ -1,12 +1,12 @@
 name: Run occ_vac project
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-#   schedule:
-#     - cron: '0 15 * * *'
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    - cron: '0 15 * * *'
 
 jobs:
   run-occupation-scraping:
@@ -333,7 +333,7 @@ jobs:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
           python vacancy_detail_7.py
-
+          
   run-vac-detail-scraping-8:
     needs:
       - run-vacancy-scraping
@@ -356,74 +356,167 @@ jobs:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
           python vacancy_detail_8.py
-
-  check_google_sheet:
-    runs-on: ubuntu-latest
+          
+  run-vac-detail-scraping-9:
     needs:
-      - run-vac-detail-scraping-1
-      - run-vac-detail-scraping-2
-      - run-vac-detail-scraping-3
-      - run-vac-detail-scraping-4
-      - run-vac-detail-scraping-5
-      - run-vac-detail-scraping-6
-      - run-vac-detail-scraping-7
-      - run-vac-detail-scraping-8
-    if: always()
-    outputs:
-      retry: ${{ steps.check_value.outputs.retry }}
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
     steps:
+      - name: Wait for 240 seconds
+        run: sleep 240
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.x"
-      - name: Install Dependencies
-        run: pip install google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client
-      - name: Check Google Sheet Value
-        id: check_value
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
         env:
-          GOOGLE_SHEETS_CREDENTIALS: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-          SPREADSHEET_ID: ${{ secrets.SPREADSHEET_ID }}
-          SHEET_NAME: "Progress"
-          RANGE: "A4"
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
-          python - <<'EOF'
-          import json
-          import os
-          from google.oauth2.service_account import Credentials
-          from googleapiclient.discovery import build
-
-          credentials_info = json.loads(os.environ["GOOGLE_SHEETS_CREDENTIALS"])
-          credentials = Credentials.from_service_account_info(
-              credentials_info, scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
-          )
-          service = build("sheets", "v4", credentials=credentials)
-          sheet = service.spreadsheets()
-          SPREADSHEET_ID = os.environ["SPREADSHEET_ID"]
-          SHEET_NAME = os.environ["SHEET_NAME"]
-          RANGE = f"{SHEET_NAME}!{os.environ['RANGE']}"
-          result = sheet.values().get(spreadsheetId=SPREADSHEET_ID, range=RANGE).execute()
-          values = result.get("values", [])
-          if values and "finished" in values[0][0].lower():
-              print("Job completed successfully. No need to retry.")
-              retry_val = "false"
-          else:
-              print("Trigger word not found. Retrying the job...")
-              retry_val = "true"
-          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
-              fh.write(f"retry={retry_val}\n")
-          EOF
-
-  retry_workflow:
+          python vacancy_detail_9.py
+          
+  run-vac-detail-scraping-10:
+    needs:
+      - run-vacancy-scraping
     runs-on: ubuntu-latest
-    needs: check_google_sheet
-    if: needs.check_google_sheet.outputs.retry == 'true'
     steps:
-      - name: Trigger New Workflow Run
+      - name: Wait for 270 seconds
+        run: sleep 270
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
         run: |
-          curl -X POST -H "Accept: application/vnd.github.v3+json" \
-               -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               https://api.github.com/repos/Skullking2520/yourcareer-au-scrapping/actions/workflows/scrapping.yaml/dispatches \
-               -d '{"ref":"main"}'
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_10.py
+          
+  run-vac-detail-scraping-11:
+    needs:
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 300 seconds
+        run: sleep 300
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_11.py
+          
+  run-vac-detail-scraping-12:
+    needs:
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 330 seconds
+        run: sleep 330
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_12.py
+          
+  run-vac-detail-scraping-13:
+    needs:
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 360 seconds
+        run: sleep 360
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_13.py
+          
+  run-vac-detail-scraping-14:
+    needs:
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 390 seconds
+        run: sleep 390
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_14.py
+          
+  run-vac-detail-scraping-15:
+    needs:
+      - run-vacancy-scraping
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 420 seconds
+        run: sleep 420
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_detail_15.py
 
   run-occ-vac-compile-1:
     needs:
@@ -440,6 +533,13 @@ jobs:
       - run-vac-detail-scraping-6
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -473,6 +573,13 @@ jobs:
       - run-vac-detail-scraping-6
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 30 seconds
@@ -508,6 +615,13 @@ jobs:
       - run-vac-detail-scraping-6
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 60 seconds
@@ -543,6 +657,13 @@ jobs:
       - run-vac-detail-scraping-6
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 90 seconds
@@ -562,7 +683,7 @@ jobs:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
           python occ_vac_compile_4.py
-
+          
   run-occ-vac-compile-5:
     needs:
       - run-occ-datail-scraping-1
@@ -578,6 +699,13 @@ jobs:
       - run-vac-detail-scraping-6
       - run-vac-detail-scraping-7
       - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 120 seconds
@@ -597,7 +725,637 @@ jobs:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
           python occ_vac_compile_5.py
-
+          
+  run-occ-vac-compile-6:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 150 seconds
+        run: sleep 150
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_6.py
+          
+  run-occ-vac-compile-7:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 180 seconds
+        run: sleep 180
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_7.py
+          
+  run-occ-vac-compile-8:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 210 seconds
+        run: sleep 210
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_8.py
+          
+  run-occ-vac-compile-9:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 240 seconds
+        run: sleep 240
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_9.py
+          
+  run-occ-vac-compile-10:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 270 seconds
+        run: sleep 270
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_10.py
+          
+  run-occ-vac-compile-11:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 300 seconds
+        run: sleep 300
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_11.py
+          
+  run-occ-vac-compile-12:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 330 seconds
+        run: sleep 330
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_12.py
+          
+  run-occ-vac-compile-13:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 360 seconds
+        run: sleep 360
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_13.py
+          
+  run-occ-vac-compile-14:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 390 seconds
+        run: sleep 390
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_14.py
+          
+  run-occ-vac-compile-15:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 420 seconds
+        run: sleep 420
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_15.py
+          
+  run-occ-vac-compile-16:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 450 seconds
+        run: sleep 450
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_16.py
+          
+  run-occ-vac-compile-17:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 480 seconds
+        run: sleep 480
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_17.py
+          
+  run-occ-vac-compile-18:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 510 seconds
+        run: sleep 510
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_18.py
+          
+  run-occ-vac-compile-19:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 540 seconds
+        run: sleep 540
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_19.py
+          
+  run-occ-vac-compile-20:
+    needs:
+      - run-occ-datail-scraping-1
+      - run-occ-datail-scraping-2
+      - run-occ-datail-scraping-3
+      - run-occ-datail-scraping-4
+      - run-occ-datail-scraping-5
+      - run-vac-detail-scraping-1
+      - run-vac-detail-scraping-2
+      - run-vac-detail-scraping-3
+      - run-vac-detail-scraping-4
+      - run-vac-detail-scraping-5
+      - run-vac-detail-scraping-6
+      - run-vac-detail-scraping-7
+      - run-vac-detail-scraping-8
+      - run-vac-detail-scraping-9
+      - run-vac-detail-scraping-10
+      - run-vac-detail-scraping-11
+      - run-vac-detail-scraping-12
+      - run-vac-detail-scraping-13
+      - run-vac-detail-scraping-14
+      - run-vac-detail-scraping-15
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wait for 570 seconds
+        run: sleep 570
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python occ_vac_compile_20.py
+          
   run-clear:
     needs:
       - run-occ-vac-compile-1
@@ -605,6 +1363,21 @@ jobs:
       - run-occ-vac-compile-3
       - run-occ-vac-compile-4
       - run-occ-vac-compile-5
+      - run-occ-vac-compile-6
+      - run-occ-vac-compile-7
+      - run-occ-vac-compile-8
+      - run-occ-vac-compile-9
+      - run-occ-vac-compile-10
+      - run-occ-vac-compile-11
+      - run-occ-vac-compile-12
+      - run-occ-vac-compile-13
+      - run-occ-vac-compile-14
+      - run-occ-vac-compile-15
+      - run-occ-vac-compile-16
+      - run-occ-vac-compile-17
+      - run-occ-vac-compile-18
+      - run-occ-vac-compile-19
+      - run-occ-vac-compile-20
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -617,7 +1390,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run occ_vac compiling
+      - name: Run clear
         env:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
