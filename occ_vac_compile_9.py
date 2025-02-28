@@ -173,7 +173,7 @@ def main():
     wait = WebDriverWait(driver, 10)
     va_sheet = get_worksheet_with_retry("Vacancies")
     progress_sheet = get_worksheet_with_retry("Progress")
-    ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 4}, "I5")
+    ph = ProcessHandler(progress_sheet, {"progress": "setting", "RowNum": 8}, "I5")
     progress = ph.load_progress()
     occ_extracted_list = extract_occupation()
     vac_extracted_list = extract_vacancy()
