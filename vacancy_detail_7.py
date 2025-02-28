@@ -160,7 +160,7 @@ def main():
                     closes = "Failed to load detail page"
                     job_description = "Failed to load detail page"
                     print(f"Failed to find detail of row {progress["RowNum"]}. Skipping...")
-                    progress["RowNum"] += 8
+                    progress["RowNum"] += 15
                 else:
                     max_retries = 3
                     loaded = False
@@ -186,7 +186,7 @@ def main():
                         tenure = "Failed to load detail page"
                         closes = "Failed to load detail page"
                         job_description = "Failed to load detail page"
-                        progress["RowNum"] += 8
+                        progress["RowNum"] += 15
                         continue
                     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
                     wait_for_page_load(driver)
@@ -285,7 +285,7 @@ def main():
                 ]
                 pending_updates.append((row_num, va_data))
                 time.sleep(3)
-                progress["RowNum"] += 8
+                progress["RowNum"] += 15
                 if len(pending_updates) >= 20:
                     batch_update_multiple_rows(va_sheet, pending_updates)
                     progress_sheet.update(values=[[json.dumps({"progress": "processing", "RowNum": progress["RowNum"]})]], range_name="G4")
