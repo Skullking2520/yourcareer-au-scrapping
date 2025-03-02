@@ -144,35 +144,52 @@ def extract_vacancy():
     return vacancy_list
 
 
-def update_cells_append_batch(worksheet, row_indices, col, new_value):
+def update_cells_append_batch(worksheet, row_indices, col, new_value, batch_size=100):
     if not row_indices:
         return
 
     min_row, max_row = min(row_indices), max(row_indices)
-    cell_range = worksheet.range(min_row, col, max_row, col)
 
+    def get_range_with_retry():
+        delay = 10
+        for attempt in range(3):
+            try:
+                return worksheet.range(min_row, col, max_row, col)
+            except gspread.exceptions.APIError as e:
+                if "429" in str(e):
+                    print(f"Read quota error when fetching range. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                    time.sleep(delay)
+                    delay *= 2
+                else:
+                    raise
+        raise Exception("Failed to fetch range after several attempts.")
+
+    cell_range = get_range_with_retry()
+
+    updates = []
     for cell in cell_range:
         if cell.row in row_indices:
             current_value = cell.value or ""
             existing = set(item.strip() for item in current_value.split(",")) if current_value else set()
             if new_value not in existing:
                 cell.value = current_value + ("," if current_value else "") + new_value
-    delay = 5
-    for attempt in range(3):
-        try:
-            worksheet.update_cells(cell_range)
-            break
-        except gspread.exceptions.APIError as e:
-            if "429" in str(e):
-                print(f"Write quota error when updating cells. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
-                time.sleep(delay)
-                delay *= 2
-            else:
-                raise
-    else:
-        print("Failed to update cells after several attempts.")
+                updates.append(cell)
 
-
+    if updates:
+        delay = 30
+        for attempt in range(3):
+            try:
+                worksheet.update_cells(updates)
+                break
+            except gspread.exceptions.APIError as e:
+                if "429" in str(e):
+                    print(f"Write quota error when updating cells. Retrying in {delay} seconds... (Attempt {attempt+1}/3)")
+                    time.sleep(delay)
+                    delay *= 2
+                else:
+                    raise
+        else:
+            print("Failed to update cells after several attempts.")
 def main():
     wait = WebDriverWait(driver, 10)
     va_sheet = get_worksheet_with_retry("Vacancies")
