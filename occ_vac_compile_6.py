@@ -241,7 +241,7 @@ def main():
                 except Exception as e:
                     print(f"An error occurred while waiting for page load: {e}. Attempt {attempt + 1}")
             else:
-                pprogress["RowNum"] += 20
+                progress["RowNum"] += 20
                 print(f"Vacancy elements did not load in time. Skipping row {progress["RowNum"]}")
                 break
 
