@@ -272,24 +272,7 @@ def main():
                 break
         
             prev_job_codes = current_job_codes
-
-            try:
-                driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-                if not next_button.is_enabled() or next_button.get_attribute("disabled"):
-                    raise NoSuchElementException
-                pagenum += 1
-            except NoSuchElementException:
-                update_cells_append_batch(va_sheet, match_index, col_occupation, occ_name)
-                update_cells_append_batch(va_sheet, match_index, col_occ_link, occ_url)
-                time.sleep(3)
-                print(f"{occ_name} matching finished, proceeding to next occupation")
-                progress["RowNum"] += 20
-                match_index = []
-                break
-            except Exception as e:
-                print(f"An error occurred while finding next button: {e}")
-                progress["RowNum"] += 20
-                break
+            pagenum += 1
                 
         progress["progress"] = "finished"
         ph.save_progress(progress)
