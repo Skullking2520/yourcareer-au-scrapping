@@ -218,6 +218,7 @@ def main():
         va_url = str(raw_va_url) + "&pageNumber="
 
         pagenum = 1
+        match_index = []
         prev_job_codes = None
         while True:
             try:
