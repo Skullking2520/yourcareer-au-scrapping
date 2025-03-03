@@ -224,8 +224,8 @@ def main():
             try:
                 driver.get(va_url + str(pagenum))
             except Exception:
-                print(f"Failed to load page {pagenum}, skipping...")
                 progress["RowNum"] += 20
+                print(f"Vacancy elements did not load in time. Skipping row {progress["RowNum"]}")
                 break
 
             driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
