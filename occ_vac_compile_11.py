@@ -241,8 +241,8 @@ def main():
                 except Exception as e:
                     print(f"An error occurred while waiting for page load: {e}. Attempt {attempt + 1}")
             else:
-                print(f"Failed to load page {pagenum}, skipping...")
                 progress["RowNum"] += 20
+                print(f"Vacancy elements did not load in time. Skipping row {progress["RowNum"]}")
                 break
 
             vacancy_dict = {str(va[0]): va[1] for va in vac_extracted_list}
