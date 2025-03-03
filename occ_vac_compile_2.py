@@ -262,6 +262,8 @@ def main():
 
             try:
                 driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
+                if not next_button.is_enabled() or next_button.get_attribute("disabled"):
+                    raise NoSuchElementException
                 pagenum += 1
             except NoSuchElementException:
                 update_cells_append_batch(va_sheet, match_index, col_occupation, occ_name)
