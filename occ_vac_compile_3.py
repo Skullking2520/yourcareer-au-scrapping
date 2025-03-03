@@ -221,6 +221,7 @@ def main():
 
         pagenum = 1
         match_index = []
+        prev_job_codes = None
         while True:
             try:
                 driver.get(va_url + str(pagenum))
@@ -247,7 +248,7 @@ def main():
                 continue
 
             vacancy_dict = {str(va[0]): va[1] for va in vac_extracted_list}
-
+            current_job_codes = []
             for vacancy in vacancies:
                 try:
                     job_hyper = vacancy.find_element(By.CSS_SELECTOR, "a[class='mint-link link']")
@@ -255,16 +256,12 @@ def main():
                     job_code = job_href.split('/')[-1]
                 except NoSuchElementException:
                     job_code = "NA"
-
+                current_job_codes.append(job_code)
                 if job_code in vacancy_dict:
                     match_index.append(vacancy_dict[job_code])
 
-            try:
-                driver.find_element(By.CSS_SELECTOR, "button[aria-label='Go to next page']")
-                if not next_button.is_enabled() or next_button.get_attribute("disabled"):
-                    raise NoSuchElementException
-                pagenum += 1
-            except NoSuchElementException:
+            if prev_job_codes is not None and set(current_job_codes) == set(prev_job_codes):
+                print("Current page vacancy list is identical to the previous page. Ending loop.")
                 update_cells_append_batch(va_sheet, match_index, col_occupation, occ_name)
                 update_cells_append_batch(va_sheet, match_index, col_occ_link, occ_url)
                 time.sleep(3)
@@ -272,10 +269,10 @@ def main():
                 progress["RowNum"] += 20
                 match_index = []
                 break
-            except Exception as e:
-                print(f"An error occurred while finding next button: {e}")
-                progress["RowNum"] += 20
-                break
+        
+            prev_job_codes = current_job_codes
+            pagenum += 1
+            
                 
         progress["progress"] = "finished"
         ph.save_progress(progress)
