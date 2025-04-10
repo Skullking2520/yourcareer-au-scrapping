@@ -48,23 +48,29 @@ def set_vacancy_data_sheet():
     worksheet.append_row(headers)
     return worksheet
 
+
 def load_to_seen_data():
     vac_sheet = web_sheet.get_worksheet("Vacancies")
     data_sheet = web_sheet.get_worksheet("VacancyData")
-    data_sheet.clear()
+    seen_jobs = load_seen_jobs_data(data_sheet)
+
     vac_header = vac_sheet.row_values(1)
     try:
         vac_code_idx = vac_header.index("job code") + 1
     except ValueError as e:
         print("Could not detect requested row", e)
         return
+
     all_rows = vac_sheet.get_all_values()[1:]
-    dup_list = []
-    for row_num, row in enumerate(all_rows, start=2):
+    new_job_codes = []
+    for row in all_rows:
         vac_code = row[vac_code_idx - 1] if len(row) >= vac_code_idx else ""
-        dup_list.append([vac_code])
-    if dup_list:
-        data_sheet.update("A2", dup_list)
+        if vac_code and vac_code.lower() not in seen_jobs:
+            new_job_codes.append([vac_code])
+            seen_jobs.add(vac_code.lower())
+
+    if new_job_codes:
+        data_sheet.append_rows(new_job_codes, value_input_option="USER_ENTERED")
 
 def save_seen_jobs_data(worksheet, seen_jobs):
     rows = [[job_code] for job_code in seen_jobs]
