@@ -64,7 +64,7 @@ def load_to_seen_data():
         vac_code = row[vac_code_idx - 1] if len(row) >= vac_code_idx else ""
         dup_list.append([vac_code])
     if dup_list:
-        data_sheet.append_rows(dup_list, value_input_option="USER_ENTERED")
+        data_sheet.update("A4", dup_list)
 
 def save_seen_jobs_data(worksheet, seen_jobs):
     rows = [[job_code] for job_code in seen_jobs]
