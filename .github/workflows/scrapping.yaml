@@ -179,6 +179,8 @@ jobs:
   run-vacancy-scraping-2:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for 30 seconds
+        run: sleep 30
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
@@ -199,6 +201,8 @@ jobs:
   run-vacancy-scraping-3:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for 60 seconds
+        run: sleep 60
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
@@ -219,6 +223,8 @@ jobs:
   run-vacancy-scraping-4:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for 90 seconds
+        run: sleep 90
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
@@ -239,6 +245,8 @@ jobs:
   run-vacancy-scraping-5:
     runs-on: ubuntu-latest
     steps:
+      - name: Wait for 120 seconds
+        run: sleep 120
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Python
