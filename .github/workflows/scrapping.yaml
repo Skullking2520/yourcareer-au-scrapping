@@ -156,7 +156,7 @@ jobs:
         run: |
           python occupation_detail_5.py
 
-  run-vacancy-scraping:
+  run-vacancy-scraping-1:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -173,11 +173,95 @@ jobs:
         env:
           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
         run: |
-          python vacancy_scrapping.py
+          python vacancy_scrapping_1.py
+                    
+
+  run-vacancy-scraping-2:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_scrapping_2.py
+                    
+
+  run-vacancy-scraping-3:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_scrapping_3.py
+                    
+
+  run-vacancy-scraping-4:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_scrapping_4.py
+                    
+
+  run-vacancy-scraping-5:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Run occ_vac compiling
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          python vacancy_scrapping_5.py
 
   run-vac-detail-scraping-1:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -198,7 +282,11 @@ jobs:
 
   run-vac-detail-scraping-2:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 30 seconds
@@ -221,7 +309,11 @@ jobs:
 
   run-vac-detail-scraping-3:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 60 seconds
@@ -244,7 +336,11 @@ jobs:
 
   run-vac-detail-scraping-4:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 90 seconds
@@ -267,7 +363,11 @@ jobs:
 
   run-vac-detail-scraping-5:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 120 seconds
@@ -290,7 +390,11 @@ jobs:
 
   run-vac-detail-scraping-6:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 150 seconds
@@ -313,7 +417,11 @@ jobs:
 
   run-vac-detail-scraping-7:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 180 seconds
@@ -336,7 +444,11 @@ jobs:
           
   run-vac-detail-scraping-8:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 210 seconds
@@ -359,7 +471,11 @@ jobs:
           
   run-vac-detail-scraping-9:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 240 seconds
@@ -382,7 +498,11 @@ jobs:
           
   run-vac-detail-scraping-10:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 270 seconds
@@ -405,7 +525,11 @@ jobs:
           
   run-vac-detail-scraping-11:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 300 seconds
@@ -428,7 +552,11 @@ jobs:
           
   run-vac-detail-scraping-12:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 330 seconds
@@ -451,7 +579,11 @@ jobs:
           
   run-vac-detail-scraping-13:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 360 seconds
@@ -474,7 +606,11 @@ jobs:
           
   run-vac-detail-scraping-14:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 390 seconds
@@ -497,7 +633,11 @@ jobs:
           
   run-vac-detail-scraping-15:
     needs:
-      - run-vacancy-scraping
+      - run-vacancy-scraping-1
+      - run-vacancy-scraping-2
+      - run-vacancy-scraping-3
+      - run-vacancy-scraping-4
+      - run-vacancy-scraping-5
     runs-on: ubuntu-latest
     steps:
       - name: Wait for 420 seconds
