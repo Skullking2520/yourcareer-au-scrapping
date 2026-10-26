@@ -40,6 +40,7 @@
 #       - name: Run Occupation Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_scrapping.py
 
@@ -61,6 +62,7 @@
 #       - name: Run Occupation Detail Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_detail_1.py
 
@@ -84,6 +86,7 @@
 #       - name: Run Occupation Detail Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_detail_2.py
 
@@ -107,6 +110,7 @@
 #       - name: Run Occupation Detail Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_detail_3.py
 
@@ -130,6 +134,7 @@
 #       - name: Run Occupation Detail Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_detail_4.py
 
@@ -153,6 +158,7 @@
 #       - name: Run Occupation Detail Scraping
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occupation_detail_5.py
 
@@ -172,6 +178,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_scrapping_1.py
                     
@@ -194,6 +201,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_scrapping_2.py
                     
@@ -216,6 +224,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_scrapping_3.py
                     
@@ -238,6 +247,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_scrapping_4.py
                     
@@ -260,6 +270,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_scrapping_5.py
 
@@ -285,6 +296,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_1.py
 
@@ -312,6 +324,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_2.py
 
@@ -339,6 +352,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_3.py
 
@@ -366,6 +380,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_4.py
 
@@ -393,6 +408,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_5.py
 
@@ -420,6 +436,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_6.py
 
@@ -447,6 +464,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_7.py
           
@@ -474,6 +492,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_8.py
           
@@ -501,6 +520,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_9.py
           
@@ -528,6 +548,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_10.py
           
@@ -555,6 +576,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_11.py
           
@@ -582,6 +604,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_12.py
           
@@ -609,6 +632,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_13.py
           
@@ -636,6 +660,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_14.py
           
@@ -663,6 +688,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python vacancy_detail_15.py
 
@@ -703,6 +729,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_1.py
 
@@ -745,6 +772,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_2.py
 
@@ -787,6 +815,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_3.py
 
@@ -829,6 +858,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_4.py
           
@@ -871,6 +901,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_5.py
           
@@ -913,6 +944,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_6.py
           
@@ -955,6 +987,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_7.py
           
@@ -997,6 +1030,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_8.py
           
@@ -1039,6 +1073,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_9.py
           
@@ -1081,6 +1116,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_10.py
           
@@ -1123,6 +1159,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_11.py
           
@@ -1165,6 +1202,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_12.py
           
@@ -1207,6 +1245,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_13.py
           
@@ -1249,6 +1288,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_14.py
           
@@ -1291,6 +1331,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_15.py
           
@@ -1333,6 +1374,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_16.py
           
@@ -1375,6 +1417,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_17.py
           
@@ -1417,6 +1460,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_18.py
           
@@ -1459,6 +1503,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_19.py
           
@@ -1501,6 +1546,7 @@
 #       - name: Run occ_vac compiling
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python occ_vac_compile_20.py
           
@@ -1541,5 +1587,6 @@
 #       - name: Run clear
 #         env:
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+#           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
 #           python clear.py

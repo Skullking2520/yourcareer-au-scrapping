@@ -1,5 +1,6 @@
 # google_form_package.py
 import os  # noqa
+import json
 import time
 import gspread
 from google.oauth2.service_account import Credentials
@@ -12,16 +13,15 @@ class Sheet:
         if not key_content:
             raise FileNotFoundError("Service account key content not found in environment variable!")
 
-        key_path = "service_account.json"
-        with open(key_path, "w") as f:
-            f.write(key_content)
         scopes = [
             'https://www.googleapis.com/auth/spreadsheets',
             'https://www.googleapis.com/auth/drive'
         ]
-        credentials = Credentials.from_service_account_file(key_path, scopes=scopes)
+        credentials = Credentials.from_service_account_info(json.loads(key_content), scopes=scopes)
         gc = gspread.authorize(credentials)
-        spreadsheet_url = "https://docs.google.com/spreadsheets/d/REDACTED_WORK_SHEET_IDqCNXxm9m7eu0/edit?gid=0#gid=0"
+        spreadsheet_url = os.environ.get("SPREADSHEET_URL", "").strip()
+        if not spreadsheet_url:
+            raise ValueError("Set SPREADSHEET_URL to an authorized test spreadsheet before running.")
         retries = 3
         delay = 5
         for attempt in range(retries):
