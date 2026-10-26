@@ -32,3 +32,8 @@ exports/
 results/
 jobs.csv
 books.csv
+
+# Local outputs and interpreter caches
+__pycache__/
+*.py[cod]
+.venv/

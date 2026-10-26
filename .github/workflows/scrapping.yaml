@@ -42,7 +42,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_scrapping.py
+#           python scripts/occupation_scrapping.py
 
 #   run-occ-datail-scraping-1:
 #     needs:
@@ -64,7 +64,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_detail_1.py
+#           python scripts/occupation_detail_1.py
 
 #   run-occ-datail-scraping-2:
 #     needs:
@@ -88,7 +88,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_detail_2.py
+#           python scripts/occupation_detail_2.py
 
 #   run-occ-datail-scraping-3:
 #     needs:
@@ -112,7 +112,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_detail_3.py
+#           python scripts/occupation_detail_3.py
 
 #   run-occ-datail-scraping-4:
 #     needs:
@@ -136,7 +136,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_detail_4.py
+#           python scripts/occupation_detail_4.py
 
 #   run-occ-datail-scraping-5:
 #     needs:
@@ -160,7 +160,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occupation_detail_5.py
+#           python scripts/occupation_detail_5.py
 
 #   run-vacancy-scraping-1:
 #     runs-on: ubuntu-latest
@@ -180,7 +180,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_scrapping_1.py
+#           python scripts/vacancy_scrapping_1.py
                     
 
 #   run-vacancy-scraping-2:
@@ -203,7 +203,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_scrapping_2.py
+#           python scripts/vacancy_scrapping_2.py
                     
 
 #   run-vacancy-scraping-3:
@@ -226,7 +226,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_scrapping_3.py
+#           python scripts/vacancy_scrapping_3.py
                     
 
 #   run-vacancy-scraping-4:
@@ -249,7 +249,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_scrapping_4.py
+#           python scripts/vacancy_scrapping_4.py
                     
 
 #   run-vacancy-scraping-5:
@@ -272,7 +272,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_scrapping_5.py
+#           python scripts/vacancy_scrapping_5.py
 
 #   run-vac-detail-scraping-1:
 #     needs:
@@ -298,7 +298,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_1.py
+#           python scripts/vacancy_detail_1.py
 
 #   run-vac-detail-scraping-2:
 #     needs:
@@ -326,7 +326,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_2.py
+#           python scripts/vacancy_detail_2.py
 
 #   run-vac-detail-scraping-3:
 #     needs:
@@ -354,7 +354,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_3.py
+#           python scripts/vacancy_detail_3.py
 
 #   run-vac-detail-scraping-4:
 #     needs:
@@ -382,7 +382,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_4.py
+#           python scripts/vacancy_detail_4.py
 
 #   run-vac-detail-scraping-5:
 #     needs:
@@ -410,7 +410,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_5.py
+#           python scripts/vacancy_detail_5.py
 
 #   run-vac-detail-scraping-6:
 #     needs:
@@ -438,7 +438,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_6.py
+#           python scripts/vacancy_detail_6.py
 
 #   run-vac-detail-scraping-7:
 #     needs:
@@ -466,7 +466,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_7.py
+#           python scripts/vacancy_detail_7.py
           
 #   run-vac-detail-scraping-8:
 #     needs:
@@ -494,7 +494,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_8.py
+#           python scripts/vacancy_detail_8.py
           
 #   run-vac-detail-scraping-9:
 #     needs:
@@ -522,7 +522,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_9.py
+#           python scripts/vacancy_detail_9.py
           
 #   run-vac-detail-scraping-10:
 #     needs:
@@ -550,7 +550,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_10.py
+#           python scripts/vacancy_detail_10.py
           
 #   run-vac-detail-scraping-11:
 #     needs:
@@ -578,7 +578,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_11.py
+#           python scripts/vacancy_detail_11.py
           
 #   run-vac-detail-scraping-12:
 #     needs:
@@ -606,7 +606,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_12.py
+#           python scripts/vacancy_detail_12.py
           
 #   run-vac-detail-scraping-13:
 #     needs:
@@ -634,7 +634,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_13.py
+#           python scripts/vacancy_detail_13.py
           
 #   run-vac-detail-scraping-14:
 #     needs:
@@ -662,7 +662,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_14.py
+#           python scripts/vacancy_detail_14.py
           
 #   run-vac-detail-scraping-15:
 #     needs:
@@ -690,7 +690,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python vacancy_detail_15.py
+#           python scripts/vacancy_detail_15.py
 
 #   run-occ-vac-compile-1:
 #     needs:
@@ -731,7 +731,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_1.py
+#           python scripts/occ_vac_compile_1.py
 
 #   run-occ-vac-compile-2:
 #     needs:
@@ -774,7 +774,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_2.py
+#           python scripts/occ_vac_compile_2.py
 
 #   run-occ-vac-compile-3:
 #     needs:
@@ -817,7 +817,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_3.py
+#           python scripts/occ_vac_compile_3.py
 
 #   run-occ-vac-compile-4:
 #     needs:
@@ -860,7 +860,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_4.py
+#           python scripts/occ_vac_compile_4.py
           
 #   run-occ-vac-compile-5:
 #     needs:
@@ -903,7 +903,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_5.py
+#           python scripts/occ_vac_compile_5.py
           
 #   run-occ-vac-compile-6:
 #     needs:
@@ -946,7 +946,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_6.py
+#           python scripts/occ_vac_compile_6.py
           
 #   run-occ-vac-compile-7:
 #     needs:
@@ -989,7 +989,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_7.py
+#           python scripts/occ_vac_compile_7.py
           
 #   run-occ-vac-compile-8:
 #     needs:
@@ -1032,7 +1032,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_8.py
+#           python scripts/occ_vac_compile_8.py
           
 #   run-occ-vac-compile-9:
 #     needs:
@@ -1075,7 +1075,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_9.py
+#           python scripts/occ_vac_compile_9.py
           
 #   run-occ-vac-compile-10:
 #     needs:
@@ -1118,7 +1118,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_10.py
+#           python scripts/occ_vac_compile_10.py
           
 #   run-occ-vac-compile-11:
 #     needs:
@@ -1161,7 +1161,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_11.py
+#           python scripts/occ_vac_compile_11.py
           
 #   run-occ-vac-compile-12:
 #     needs:
@@ -1204,7 +1204,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_12.py
+#           python scripts/occ_vac_compile_12.py
           
 #   run-occ-vac-compile-13:
 #     needs:
@@ -1247,7 +1247,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_13.py
+#           python scripts/occ_vac_compile_13.py
           
 #   run-occ-vac-compile-14:
 #     needs:
@@ -1290,7 +1290,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_14.py
+#           python scripts/occ_vac_compile_14.py
           
 #   run-occ-vac-compile-15:
 #     needs:
@@ -1333,7 +1333,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_15.py
+#           python scripts/occ_vac_compile_15.py
           
 #   run-occ-vac-compile-16:
 #     needs:
@@ -1376,7 +1376,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_16.py
+#           python scripts/occ_vac_compile_16.py
           
 #   run-occ-vac-compile-17:
 #     needs:
@@ -1419,7 +1419,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_17.py
+#           python scripts/occ_vac_compile_17.py
           
 #   run-occ-vac-compile-18:
 #     needs:
@@ -1462,7 +1462,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_18.py
+#           python scripts/occ_vac_compile_18.py
           
 #   run-occ-vac-compile-19:
 #     needs:
@@ -1505,7 +1505,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_19.py
+#           python scripts/occ_vac_compile_19.py
           
 #   run-occ-vac-compile-20:
 #     needs:
@@ -1548,7 +1548,7 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python occ_vac_compile_20.py
+#           python scripts/occ_vac_compile_20.py
           
 #   run-clear:
 #     needs:
@@ -1589,4 +1589,4 @@
 #           SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 #           SPREADSHEET_URL: ${{ secrets.SPREADSHEET_URL }}
 #         run: |
-#           python clear.py
+#           python scripts/clear.py
