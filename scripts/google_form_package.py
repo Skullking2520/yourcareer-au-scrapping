@@ -1,3 +1,5 @@
+import re
+from urllib.parse import urlparse
 # google_form_package.py
 import os  # noqa
 import json
@@ -8,20 +10,31 @@ from selenium import webdriver
 
 class Sheet:
     def __init__(self):
-        # This is for GitHub action
         key_content = os.environ.get("SERVICE_ACCOUNT_KEY")
         if not key_content:
-            raise FileNotFoundError("Service account key content not found in environment variable!")
-
-        scopes = [
-            'https://www.googleapis.com/auth/spreadsheets',
-            'https://www.googleapis.com/auth/drive'
-        ]
-        credentials = Credentials.from_service_account_info(json.loads(key_content), scopes=scopes)
-        gc = gspread.authorize(credentials)
+            raise ValueError("Set SERVICE_ACCOUNT_KEY before running.")
         spreadsheet_url = os.environ.get("SPREADSHEET_URL", "").strip()
-        if not spreadsheet_url:
-            raise ValueError("Set SPREADSHEET_URL to an authorized test spreadsheet before running.")
+        parsed_url = urlparse(spreadsheet_url)
+        if (
+            parsed_url.scheme != "https"
+            or parsed_url.netloc != "docs.google.com"
+            or not re.fullmatch(r"/spreadsheets/d/[A-Za-z0-9_-]+(?:/.*)?", parsed_url.path)
+        ):
+            raise ValueError("Set SPREADSHEET_URL to an authorized HTTPS Google Sheets URL.")
+        try:
+            key_info = json.loads(key_content)
+            if not isinstance(key_info, dict):
+                raise ValueError
+            credentials = Credentials.from_service_account_info(
+                key_info,
+                scopes=[
+                    "https://www.googleapis.com/auth/spreadsheets",
+                    "https://www.googleapis.com/auth/drive",
+                ],
+            )
+        except (ValueError, TypeError, KeyError):
+            raise ValueError("SERVICE_ACCOUNT_KEY must contain valid service-account JSON.") from None
+        gc = gspread.authorize(credentials)
         retries = 3
         delay = 5
         for attempt in range(retries):

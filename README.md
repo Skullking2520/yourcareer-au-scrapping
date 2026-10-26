@@ -53,3 +53,7 @@ python -m pip install -r requirements.txt
 ```bash
 python scripts/occupation_scrapping.py
 ```
+
+시트 주소는 `https://docs.google.com/spreadsheets/d/…` 형식이어야 합니다. 누락된 설정·잘못된 URL·유효하지 않은 서비스 계정 JSON은 연결 전에 거부하며, 오류 메시지에 JSON 원문을 넣지 않습니다.
+
+외부 수집 없이 설정·인증 처리를 검사하려면 의존성을 설치한 뒤 `python -m unittest discover -s tests`를 실행합니다.
